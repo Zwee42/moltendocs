@@ -1,5 +1,6 @@
-import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
+import { useEffect, useState } from "react";
+import { useTheme } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,105 +12,290 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+type Document = { 
+  slug: string; 
+  title: string; 
+  excerpt?: string;
+  lastModified?: string;
+};
+
 export default function Home() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { theme, toggleTheme, getThemeStyles } = useTheme();
+  const styles = getThemeStyles();
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/documents');
+        const data = await res.json();
+        setDocuments(data.documents || []);
+      } catch (err) {
+        console.error('Failed to load documents:', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              pages/index.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className={`${geistSans.className} ${geistMono.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
+      <header style={{ 
+        padding: '24px', 
+        borderBottom: `1px solid ${styles.headerBorder}`,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div>
+          <h1 style={{ margin: '0 0 8px 0', fontSize: 28, fontWeight: 700 }}>MoltenDocs</h1>
+          <p style={{ margin: 0, fontSize: 16, color: styles.muted }}>
+            Your knowledge base and documentation hub
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={toggleTheme}
+            style={{
+              padding: '8px 12px',
+              background: styles.buttonSecondary,
+              color: styles.buttonSecondaryText,
+              border: 'none',
+              borderRadius: 6,
+              fontSize: 14,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
+          <a 
+            href="/admin" 
+            style={{ 
+              padding: '8px 16px', 
+              borderRadius: 6, 
+              background: styles.buttonPrimary,
+              color: styles.buttonPrimaryText,
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600
+            }}
           >
-            Read our docs
+            Admin Panel
           </a>
         </div>
+      </header>
+
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: 32 }}>
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: 48,
+          padding: '48px 24px',
+          background: styles.cardBackground,
+          border: `1px solid ${styles.cardBorder}`,
+          borderRadius: 12
+        }}>
+          <h2 style={{ 
+            margin: '0 0 16px 0', 
+            fontSize: 24, 
+            color: styles.accent,
+            fontWeight: 600 
+          }}>
+            Welcome to MoltenDocs
+          </h2>
+          <p style={{ 
+            margin: '0 0 24px 0', 
+            fontSize: 18, 
+            color: styles.muted,
+            maxWidth: 600,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            lineHeight: 1.6
+          }}>
+            Browse through our comprehensive documentation and guides. 
+            Use the admin panel to manage and edit content.
+          </p>
+          {documents.length > 0 && (
+            <div style={{ 
+              padding: 16, 
+              background: styles.accent + '10',
+              border: `1px solid ${styles.accent}30`,
+              borderRadius: 8,
+              display: 'inline-block'
+            }}>
+              <span style={{ fontSize: 14, color: styles.accent, fontWeight: 600 }}>
+                📚 {documents.length} documents available
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ 
+            margin: '0 0 16px 0', 
+            fontSize: 20, 
+            color: styles.accent,
+            fontWeight: 600 
+          }}>
+            All Documents
+          </h3>
+          <p style={{ 
+            margin: 0, 
+            fontSize: 14, 
+            color: styles.muted 
+          }}>
+            Click on any document to start reading
+          </p>
+        </div>
+
+        {loading && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: 48,
+            color: styles.muted 
+          }}>
+            <div style={{ fontSize: 18, marginBottom: 8 }}>📖</div>
+            Loading documents...
+          </div>
+        )}
+
+        {!loading && documents.length === 0 && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: 48,
+            background: styles.cardBackground,
+            border: `1px solid ${styles.cardBorder}`,
+            borderRadius: 8,
+            color: styles.muted 
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 16 }}>📝</div>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: 18 }}>No documents yet</h4>
+            <p style={{ margin: '0 0 24px 0' }}>
+              Get started by creating your first document in the admin panel.
+            </p>
+            <a 
+              href="/admin" 
+              style={{ 
+                padding: '10px 20px', 
+                background: styles.buttonPrimary,
+                color: styles.buttonPrimaryText,
+                textDecoration: 'none',
+                borderRadius: 6,
+                fontSize: 14,
+                fontWeight: 600
+              }}
+            >
+              Create First Document
+            </a>
+          </div>
+        )}
+
+        {!loading && documents.length > 0 && (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+            gap: 20 
+          }}>
+            {documents.map((doc) => (
+              <a 
+                key={doc.slug} 
+                href={`/docs/${doc.slug}`} 
+                style={{ 
+                  display: 'block', 
+                  textDecoration: 'none', 
+                  color: 'inherit',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = `0 8px 25px ${styles.accent}20`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{ 
+                  border: `1px solid ${styles.cardBorder}`, 
+                  borderRadius: 10, 
+                  padding: 20, 
+                  background: styles.cardBackground,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <div style={{ 
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    marginBottom: 12
+                  }}>
+                    <span style={{ 
+                      marginRight: 12, 
+                      fontSize: 20,
+                      color: styles.accent
+                    }}>
+                      📄
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ 
+                        margin: '0 0 8px 0', 
+                        fontSize: 16, 
+                        fontWeight: 600,
+                        lineHeight: 1.4
+                      }}>
+                        {doc.title}
+                      </h4>
+                      {doc.excerpt && (
+                        <p style={{ 
+                          margin: '0 0 12px 0', 
+                          fontSize: 14, 
+                          color: styles.muted,
+                          lineHeight: 1.5
+                        }}>
+                          {doc.excerpt}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    marginTop: 'auto',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: 12,
+                    color: styles.muted
+                  }}>
+                    <span>{doc.slug}</span>
+                    {doc.lastModified && (
+                      <span>
+                        {new Date(doc.lastModified).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <footer style={{ 
+          marginTop: 64, 
+          padding: 32,
+          textAlign: 'center',
+          borderTop: `1px solid ${styles.headerBorder}`,
+          color: styles.muted
+        }}>
+          <p style={{ margin: 0, fontSize: 14 }}>
+            Powered by MoltenDocs • Built with Next.js
+          </p>
+        </footer>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
