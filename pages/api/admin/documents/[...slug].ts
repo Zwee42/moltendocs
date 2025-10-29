@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiResponse } from 'next';
 import { withAuth, AuthenticatedRequest } from '../../../../lib/middleware';
 import fs from 'fs';
 import path from 'path';
@@ -51,9 +51,18 @@ async function getDocument(filePath: string, res: NextApiResponse) {
   });
 }
 
-async function updateDocument(filePath: string, body: any, res: NextApiResponse) {
+type UpdateDocumentBody = {
+  frontmatter?: Record<string, unknown>;
+  content: string;
+};
+
+async function updateDocument(
+  filePath: string,
+  body: UpdateDocumentBody,
+  res: NextApiResponse
+) {
   const { frontmatter, content } = body;
-  
+
   if (typeof content !== 'string') {
     return res.status(400).json({ error: 'Content must be a string' });
   }
@@ -64,15 +73,15 @@ async function updateDocument(filePath: string, body: any, res: NextApiResponse)
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  // Create the full markdown content with frontmatter
+  // Create the full markdown content with frontmatter (use gray-matter.stringify)
   let markdownContent = content;
   if (frontmatter && Object.keys(frontmatter).length > 0) {
-    const frontmatterStr = matter.stringify('', frontmatter).replace(/^---\s*$/, '');
-    markdownContent = frontmatterStr + content;
+    // matter.stringify(content, data) will produce the frontmatter block + content
+    markdownContent = matter.stringify(content, frontmatter as Record<string, unknown>);
   }
 
   fs.writeFileSync(filePath, markdownContent, 'utf8');
-  
+
   res.status(200).json({ success: true });
 }
 

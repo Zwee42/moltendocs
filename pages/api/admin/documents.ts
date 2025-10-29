@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiResponse } from 'next';
 import { withAuth, AuthenticatedRequest } from '../../../lib/middleware';
 import fs from 'fs';
 import path from 'path';

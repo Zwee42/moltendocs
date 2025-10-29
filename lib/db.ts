@@ -5,6 +5,13 @@ import path from 'path';
 
 const dbPath = path.join(process.cwd(), 'data', 'moltendocs.db');
 
+type DbRunResult = {
+  lastID: number;
+  changes: number;
+};
+
+type DbGetResult<T> = T | undefined;
+
 class Database {
   private db: sqlite3.Database;
 
@@ -13,7 +20,7 @@ class Database {
   }
 
   async init() {
-    const run = promisify(this.db.run.bind(this.db));
+    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: unknown[]) => Promise<DbRunResult>;
     
     // Create users table
     await run(`
@@ -38,8 +45,8 @@ class Database {
     `);
 
     // Check if admin user exists, if not create one
-    const get = promisify(this.db.get.bind(this.db));
-    const existingAdmin = await get('SELECT id FROM users WHERE username = ?', ['admin']);
+    const get = promisify(this.db.get.bind(this.db)) as <T>(query: string, params?: unknown[]) => Promise<DbGetResult<T>>;
+    const existingAdmin = await get<{ id: number }>('SELECT id FROM users WHERE username = ?', ['admin']);
     
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -48,9 +55,11 @@ class Database {
     }
   }
 
+  
+  
   async authenticate(username: string, password: string): Promise<{ id: number; username: string } | null> {
-    const get = promisify(this.db.get.bind(this.db));
-    const user = await get('SELECT id, username, password_hash FROM users WHERE username = ?', [username]);
+    const get = promisify(this.db.get.bind(this.db)) as <T>(query: string, params?: unknown[]) => Promise<DbGetResult<T>>;
+    const user = await get<{ id: number; username: string; password_hash: string }>('SELECT id, username, password_hash FROM users WHERE username = ?', [username]);
     
     if (!user) return null;
     
@@ -61,7 +70,7 @@ class Database {
   }
 
   async createSession(userId: number): Promise<string> {
-    const run = promisify(this.db.run.bind(this.db));
+    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: unknown[]) => Promise<DbRunResult>;
     const sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     
@@ -72,8 +81,8 @@ class Database {
   }
 
   async validateSession(sessionId: string): Promise<{ id: number; username: string } | null> {
-    const get = promisify(this.db.get.bind(this.db));
-    const session = await get(`
+    const get = promisify(this.db.get.bind(this.db)) as <T>(query: string, params?: unknown[]) => Promise<DbGetResult<T>>;
+    const session = await get<{ id: number; username: string }>(`
       SELECT u.id, u.username 
       FROM sessions s 
       JOIN users u ON s.user_id = u.id 
@@ -84,7 +93,7 @@ class Database {
   }
 
   async deleteSession(sessionId: string): Promise<void> {
-    const run = promisify(this.db.run.bind(this.db));
+    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: unknown[]) => Promise<DbRunResult>;
     await run('DELETE FROM sessions WHERE id = ?', [sessionId]);
   }
 
@@ -94,16 +103,16 @@ class Database {
   }
 
   async getAllUsers(): Promise<Array<{ id: number; username: string; created_at: string }>> {
-    const all = promisify(this.db.all.bind(this.db)) as (query: string) => Promise<any[]>;
+    const all = promisify(this.db.all.bind(this.db)) as (query: string) => Promise<Array<{ id: number; username: string; created_at: string }>>;
     return await all('SELECT id, username, created_at FROM users ORDER BY created_at DESC');
   }
 
   async createUser(username: string, password: string): Promise<{ id: number; username: string }> {
-    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: any[]) => Promise<any>;
-    const get = promisify(this.db.get.bind(this.db)) as (query: string, params?: any[]) => Promise<any>;
+    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: unknown[]) => Promise<DbRunResult>;
+    const get = promisify(this.db.get.bind(this.db)) as <T>(query: string, params?: unknown[]) => Promise<DbGetResult<T>>;
 
     // Check if username already exists
-    const existingUser = await get('SELECT id FROM users WHERE username = ?', [username]);
+    const existingUser = await get<{ id: number }>('SELECT id FROM users WHERE username = ?', [username]);
     if (existingUser) {
       throw new Error('Username already exists');
     }
@@ -115,7 +124,7 @@ class Database {
   }
 
   async deleteUser(userId: number): Promise<void> {
-    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: any[]) => Promise<any>;
+    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: unknown[]) => Promise<DbRunResult>;
     
     // Delete user's sessions first
     await run('DELETE FROM sessions WHERE user_id = ?', [userId]);
@@ -129,15 +138,24 @@ class Database {
   }
 
   async updateUserPassword(userId: number, newPassword: string): Promise<void> {
-    const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: any[]) => Promise<any>;
+    // const run = promisify(this.db.run.bind(this.db)) as (query: string, params?: unknown[]) => Promise<DbRunResult>;
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    const result = await run('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', 
+    console.log('Updating password for user ID:', userId);
+    const result = await this.runAsync.call(this, 'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', 
       [hashedPassword, userId]);
-    
+    console.log("Result:", result)
     if (result.changes === 0) {
       throw new Error('User not found');
     }
+  }
+
+  async runAsync(sql: string, params: unknown[] = []): Promise<DbRunResult> {
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, params, function (err) {
+        if (err) return reject(err);
+        resolve({ changes: this.changes, lastID: this.lastID });
+      });
+    });
   }
 
   close() {

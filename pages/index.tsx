@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/theme";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -74,7 +75,7 @@ export default function Home() {
             {theme === 'dark' ? '☀️' : '🌙'}
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
-          <a 
+          <Link
             href="/admin" 
             style={{ 
               padding: '8px 16px', 
@@ -87,7 +88,7 @@ export default function Home() {
             }}
           >
             Admin Panel
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -178,7 +179,7 @@ export default function Home() {
             <p style={{ margin: '0 0 24px 0' }}>
               Get started by creating your first document in the admin panel.
             </p>
-            <a 
+            <Link
               href="/admin" 
               style={{ 
                 padding: '10px 20px', 
@@ -191,7 +192,7 @@ export default function Home() {
               }}
             >
               Create First Document
-            </a>
+            </Link>
           </div>
         )}
 
@@ -202,7 +203,7 @@ export default function Home() {
             gap: 20 
           }}>
             {documents.map((doc) => (
-              <a 
+              <Link
                 key={doc.slug} 
                 href={`/docs/${doc.slug}`} 
                 style={{ 
@@ -279,7 +280,7 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         )}

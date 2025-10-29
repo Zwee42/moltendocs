@@ -10,6 +10,8 @@ import rehypeRaw from 'rehype-raw';
 import { useTheme } from '@/lib/theme';
 import { Header } from '@/components/Header';
 import { Geist } from 'next/font/google';
+import Link from "next/link";
+
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 
@@ -50,7 +52,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
           ...(slug !== 'sample' ? [{ label: title }] : [])
         ]}
         actions={
-          <a 
+          <Link  
             href="/admin"
             style={{
               padding: '6px 12px',
@@ -62,7 +64,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
             }}
           >
             Admin
-          </a>
+          </Link>
         }
       />
       
@@ -78,10 +80,9 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
           <div style={{ fontWeight: 600, marginBottom: 16, color: styles.accent }}>Navigation</div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {pages.map((node) => {
-              const isHeadActive = node.slug === headSlug && (slug === headSlug || slug.startsWith(`${headSlug}/`));
               return (
                 <div key={node.slug}>
-                  <a 
+                  <Link 
                     href={node.slug === headSlug ? headHref : `/docs/${node.slug}`} 
                     style={{ 
                       display: 'block', 
@@ -95,11 +96,11 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
                     }}
                   >
                     {node.title}
-                  </a>
+                  </Link>
                   {node.slug === headSlug && node.children && node.children.length > 0 && (
                     <div style={{ marginLeft: 16, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {node.children.map((child) => (
-                        <a 
+                        <Link 
                           key={child.slug} 
                           href={`/docs/${child.slug}`} 
                           style={{ 
@@ -113,7 +114,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
                           }}
                         >
                           {child.title}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   )}
@@ -223,7 +224,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
           
           {nextSlug && (
             <div style={{ marginTop: 32, display: 'flex', justifyContent: 'flex-end' }}>
-              <a 
+              <Link 
                 href={`/docs/${nextSlug}`} 
                 style={{ 
                   padding: '12px 20px', 
@@ -236,7 +237,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
                 }}
               >
                 Next →
-              </a>
+              </Link>
             </div>
           )}
         </main>
@@ -328,6 +329,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
     title = result.title;
     content = result.content;
   } catch (e) {
+    void e
     content = '# Not found\nThe requested page does not exist.';
   }
 

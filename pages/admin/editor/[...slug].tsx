@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { useTheme } from '@/lib/theme';
-import { AdminHeader } from '@/components/Header';
 import { EditorToolbar } from '@/components/EditorToolbar';
 import { MarkdownPreview } from '@/components/MarkdownPreview';
 
@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 type User = { id: number; username: string };
 
 type DocumentData = {
-  frontmatter: Record<string, any>;
+  frontmatter: Record<string, unknown>;
   content: string;
   rawContent: string;
 };
@@ -32,7 +32,7 @@ export default function DocumentEditor() {
   
   // State
   const [user, setUser] = useState<User | null>(null);
-  const [document, setDocument] = useState<DocumentData | null>(null);
+  const [, setDocument] = useState<DocumentData | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -81,6 +81,7 @@ export default function DocumentEditor() {
         setIsNewDocument(false);
       }
     } catch (err) {
+      void err;
       console.error('Auto-save failed:', err);
     } finally {
       setSaving(false);
@@ -125,6 +126,7 @@ export default function DocumentEditor() {
 
     window.document.addEventListener('keydown', handleKeyDown);
     return () => window.document.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 
   // Insert text at cursor position
@@ -158,6 +160,7 @@ export default function DocumentEditor() {
           return;
         }
       } catch (err) {
+          void err;
         router.push('/admin/login');
         return;
       }
@@ -196,6 +199,7 @@ export default function DocumentEditor() {
           setError('Failed to load document');
         }
       } catch (err) {
+        void err;
         setError('Failed to load document');
       } finally {
         setLoading(false);
@@ -250,6 +254,7 @@ export default function DocumentEditor() {
         setError(data.error || 'Failed to save document');
       }
     } catch (err) {
+      void err;
       setError('Failed to save document');
     } finally {
       setSaving(false);
@@ -276,9 +281,9 @@ export default function DocumentEditor() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h1 style={{ margin: 0, fontSize: 18 }}>
-            <a href="/admin" style={{ color: styles.accent, textDecoration: 'none' }}>
+            <Link href="/admin" style={{ color: styles.accent, textDecoration: 'none' }}>
               ← Admin
-            </a>
+            </Link>
           </h1>
           <span style={{ color: styles.muted }}>|</span>
           <span style={{ fontSize: 16 }}>

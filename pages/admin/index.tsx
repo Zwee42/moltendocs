@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Geist } from 'next/font/google';
-import { useTheme } from '@/lib/theme';
 import { AdminHeader } from '@/components/Header';
+import Link from 'next/link';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,8 +28,6 @@ export default function AdminDashboard() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
-  const { theme, toggleTheme, getThemeStyles } = useTheme();
-  const styles = getThemeStyles();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,6 +41,7 @@ export default function AdminDashboard() {
           router.push('/admin/login');
         }
       } catch (err) {
+        void err;
         router.push('/admin/login');
       } finally {
         setLoading(false);
@@ -58,6 +57,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       setDocuments(data.documents || []);
     } catch (err) {
+      void err;
       console.error('Failed to load documents:', err);
     }
   };
@@ -67,6 +67,7 @@ export default function AdminDashboard() {
       await fetch('/api/auth/logout', { method: 'POST' });
       router.push('/admin/login');
     } catch (err) {
+      void err;
       console.error('Logout failed:', err);
     }
   };
@@ -158,6 +159,7 @@ export default function AdminDashboard() {
         alert(data.error || 'Failed to delete document');
       }
     } catch (err) {
+      void err;
       alert('Failed to delete document');
     } finally {
       setSaving(false);
@@ -166,80 +168,53 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className={`${geistSans.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
-        <div style={{ padding: 24 }}>Loading...</div>
+      <div className={`${geistSans.className} min-h-screen bg-[#0b0b10] text-[#e9e0ee]`}>
+        <div className="p-6">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className={`${geistSans.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
+    <div className={`${geistSans.className} min-h-screen bg-[#0b0b10] text-[#e9e0ee]`}>
       <AdminHeader 
         title="Admin"
         subtitle="Manage your documentation"
         user={user}
         onLogout={handleLogout}
         actions={
-          <a
+          <Link
             href="/admin/users"
-            style={{
-              padding: '6px 12px',
-              background: styles.buttonSecondary,
-              color: styles.buttonSecondaryText,
-              textDecoration: 'none',
-              borderRadius: 4,
-              fontSize: 12
-            }}
+            className="px-3 py-1.5 bg-[#555] text-white no-underline rounded text-xs hover:bg-[#666] transition-colors inline-block"
           >
             Manage Users
-          </a>
+          </Link>
         }
       />
 
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: 24 
-        }}>
+      <main className="max-w-[1200px] mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 style={{ margin: '0 0 4px 0', fontSize: 18, color: styles.accent }}>
+            <h2 className="m-0 mb-1 text-lg text-[#cfa6db]">
               Document Management
             </h2>
-            <p style={{ margin: 0, fontSize: 14, color: styles.muted }}>
+            <p className="m-0 text-sm text-[#aaa]">
               Drag and drop to reorder documents
-              {saving && <span style={{ color: styles.accent }}> • Saving...</span>}
+              {saving && <span className="text-[#cfa6db]"> • Saving...</span>}
             </p>
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            style={{
-              padding: '8px 16px',
-              background: styles.buttonPrimary,
-              color: styles.buttonPrimaryText,
-              border: 'none',
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
+            className="px-4 py-2 bg-[#cfa6db] text-black border-none rounded-md text-sm font-semibold cursor-pointer hover:bg-[#d9b5e8] transition-colors"
           >
             + New Document
           </button>
         </div>
 
         {showCreateForm && (
-          <div style={{
-            background: styles.cardBackground,
-            border: `1px solid ${styles.cardBorder}`,
-            borderRadius: 8,
-            padding: 20,
-            marginBottom: 24
-          }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: 16 }}>Create New Document</h3>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>
+          <div className="bg-[#101018] border border-[#441534ff] rounded-lg p-5 mb-6">
+            <h3 className="m-0 mb-4 text-base">Create New Document</h3>
+            <div className="mb-3">
+              <label className="block mb-1.5 text-sm">
                 Title
               </label>
               <input
@@ -247,19 +222,11 @@ export default function AdminDashboard() {
                 value={newPageTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Document title"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  background: styles.inputBackground,
-                  border: `1px solid ${styles.inputBorder}`,
-                  borderRadius: 4,
-                  color: styles.color,
-                  fontSize: 14
-                }}
+                className="w-full px-3 py-2 bg-[#101018] border border-[#441534ff] rounded text-[#e9e0ee] text-sm focus:outline-none focus:border-[#cfa6db]"
               />
             </div>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>
+            <div className="mb-4">
+              <label className="block mb-1.5 text-sm">
                 Slug (URL path)
               </label>
               <input
@@ -267,30 +234,18 @@ export default function AdminDashboard() {
                 value={newPageSlug}
                 onChange={(e) => setNewPageSlug(e.target.value)}
                 placeholder="document-slug"
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  background: styles.inputBackground,
-                  border: `1px solid ${styles.inputBorder}`,
-                  borderRadius: 4,
-                  color: styles.color,
-                  fontSize: 14
-                }}
+                className="w-full px-3 py-2 bg-[#101018] border border-[#441534ff] rounded text-[#e9e0ee] text-sm focus:outline-none focus:border-[#cfa6db]"
               />
             </div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="flex gap-3">
               <button
                 onClick={handleCreateDocument}
                 disabled={!newPageTitle || !newPageSlug}
-                style={{
-                  padding: '8px 16px',
-                  background: (newPageTitle && newPageSlug) ? styles.buttonPrimary : styles.buttonSecondary,
-                  color: (newPageTitle && newPageSlug) ? styles.buttonPrimaryText : styles.buttonSecondaryText,
-                  border: 'none',
-                  borderRadius: 4,
-                  fontSize: 14,
-                  cursor: (newPageTitle && newPageSlug) ? 'pointer' : 'not-allowed'
-                }}
+                className={`px-4 py-2 border-none rounded text-sm transition-colors ${
+                  newPageTitle && newPageSlug
+                    ? 'bg-[#cfa6db] text-black cursor-pointer hover:bg-[#d9b5e8]'
+                    : 'bg-[#555] text-white cursor-not-allowed'
+                }`}
               >
                 Create
               </button>
@@ -300,15 +255,7 @@ export default function AdminDashboard() {
                   setNewPageTitle('');
                   setNewPageSlug('');
                 }}
-                style={{
-                  padding: '8px 16px',
-                  background: styles.buttonSecondary,
-                  color: styles.buttonSecondaryText,
-                  border: 'none',
-                  borderRadius: 4,
-                  fontSize: 14,
-                  cursor: 'pointer'
-                }}
+                className="px-4 py-2 bg-[#555] text-white border-none rounded text-sm cursor-pointer hover:bg-[#666] transition-colors"
               >
                 Cancel
               </button>
@@ -316,14 +263,9 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div style={{ 
-          background: styles.cardBackground,
-          border: `1px solid ${styles.cardBorder}`,
-          borderRadius: 8,
-          padding: 20
-        }}>
+        <div className="bg-[#101018] border border-[#441534ff] rounded-lg p-5">
           {documents.length === 0 ? (
-            <div style={{ textAlign: 'center', color: styles.muted, padding: 40 }}>
+            <div className="text-center text-[#aaa] py-10">
               No documents found. Create your first document to get started.
             </div>
           ) : (
@@ -335,48 +277,30 @@ export default function AdminDashboard() {
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, index)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '12px 16px',
-                    background: draggedIndex === index ? styles.accent + '20' : 'transparent',
-                    border: `1px solid ${draggedIndex === index ? styles.accent : 'transparent'}`,
-                    borderRadius: 6,
-                    marginBottom: 8,
-                    cursor: 'grab',
-                    transition: 'all 0.2s ease'
-                  }}
+                  className={`flex items-center px-4 py-3 rounded-md mb-2 cursor-grab transition-all duration-200 ${
+                    draggedIndex === index
+                      ? 'bg-[#cfa6db33] border border-[#cfa6db]'
+                      : 'bg-transparent border border-transparent'
+                  }`}
                 >
-                  <span style={{ 
-                    marginRight: 12, 
-                    color: styles.muted,
-                    fontSize: 18
-                  }}>
+                  <span className="mr-3 text-[#aaa] text-lg">
                     ⋮⋮
                   </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, marginBottom: 4 }}>{doc.title}</div>
+                  <div className="flex-1">
+                    <div className="font-semibold mb-1">{doc.title}</div>
                     {doc.excerpt && (
-                      <div style={{ fontSize: 12, color: styles.muted, marginBottom: 4 }}>
+                      <div className="text-xs text-[#aaa] mb-1">
                         {doc.excerpt}
                       </div>
                     )}
-                    <div style={{ fontSize: 11, color: styles.muted }}>
+                    <div className="text-[11px] text-[#aaa]">
                       {doc.slug} • Last modified: {doc.lastModified ? new Date(doc.lastModified).toLocaleDateString() : 'Unknown'}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="flex gap-2">
                     <button
                       onClick={() => router.push(`/admin/editor/${doc.slug}`)}
-                      style={{
-                        padding: '6px 12px',
-                        background: styles.buttonPrimary,
-                        color: styles.buttonPrimaryText,
-                        border: 'none',
-                        borderRadius: 4,
-                        fontSize: 12,
-                        cursor: 'pointer'
-                      }}
+                      className="px-3 py-1.5 bg-[#cfa6db] text-black border-none rounded text-xs cursor-pointer hover:bg-[#d9b5e8] transition-colors"
                     >
                       Edit
                     </button>
@@ -384,32 +308,14 @@ export default function AdminDashboard() {
                       href={`/docs/${doc.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{
-                        padding: '6px 12px',
-                        background: styles.buttonSecondary,
-                        color: styles.buttonSecondaryText,
-                        border: 'none',
-                        borderRadius: 4,
-                        fontSize: 12,
-                        textDecoration: 'none',
-                        display: 'inline-block'
-                      }}
+                      className="px-3 py-1.5 bg-[#555] text-white border-none rounded text-xs no-underline inline-block hover:bg-[#666] transition-colors"
                     >
                       View
                     </a>
                     <button
                       onClick={() => handleDeleteDocument(doc.slug, doc.title)}
                       disabled={saving}
-                      style={{
-                        padding: '6px 12px',
-                        background: '#8b2635',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 4,
-                        fontSize: 12,
-                        cursor: saving ? 'not-allowed' : 'pointer',
-                        opacity: saving ? 0.6 : 1
-                      }}
+                      className="px-3 py-1.5 bg-[#8b2635] text-white border-none rounded text-xs hover:bg-[#a02d42] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Delete
                     </button>

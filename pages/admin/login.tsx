@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Geist } from 'next/font/google';
-import { useTheme } from '@/lib/theme';
+import Link from 'next/link';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +14,6 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { theme, toggleTheme, getThemeStyles } = useTheme();
-  const styles = getThemeStyles();
 
   useEffect(() => {
     // Check if already authenticated
@@ -26,6 +24,7 @@ export default function AdminLogin() {
           router.push('/admin');
         }
       } catch (err) {
+        void err;
         // Not authenticated, stay on login page
       }
     };
@@ -54,6 +53,7 @@ export default function AdminLogin() {
         setError(data.error || 'Login failed');
       }
     } catch (err) {
+      void err;
       setError('Network error');
     } finally {
       setLoading(false);
@@ -61,46 +61,21 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className={`${geistSans.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
-      <header style={{ 
-        padding: '20px 24px', 
-        borderBottom: `1px solid ${styles.headerBorder}`,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>
-          <a href="/" style={{ color: 'inherit', textDecoration: 'none' }}>MoltenDocs</a>
-          {' '}<span style={{ color: styles.accent }}>Admin</span>
+    <div className={`${geistSans.className} min-h-screen bg-[#0b0b10] text-[#e9e0ee]`}>
+      <header className="px-6 py-5 border-b border-[#441534ff] flex justify-between items-center">
+        <h1 className="m-0 text-[22px]">
+          <Link href="/" className="text-inherit no-underline">MoltenDocs</Link>
+          {' '}<span className="text-[#cfa6db]">Admin</span>
         </h1>
-        <button
-          onClick={toggleTheme}
-          style={{
-            padding: '6px 12px',
-            background: styles.buttonSecondary,
-            color: styles.buttonSecondaryText,
-            border: 'none',
-            borderRadius: 4,
-            fontSize: 12,
-            cursor: 'pointer'
-          }}
-        >
-          {theme === 'dark' ? '☀️' : '🌙'}
-        </button>
       </header>
       
-      <main style={{ maxWidth: 400, margin: '0 auto', padding: 60 }}>
-        <div style={{ 
-          background: styles.cardBackground, 
-          border: `1px solid ${styles.cardBorder}`, 
-          borderRadius: 10, 
-          padding: 32 
-        }}>
-          <h2 style={{ margin: '0 0 24px 0', fontSize: 20, textAlign: 'center' }}>Admin Login</h2>
+      <main className="max-w-[400px] mx-auto px-6 py-[60px]">
+        <div className="bg-[#101018] border border-[#441534ff] rounded-[10px] p-8">
+          <h2 className="m-0 mb-6 text-xl text-center">Admin Login</h2>
           
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>
+            <div className="mb-4">
+              <label className="block mb-1.5 text-sm">
                 Username
               </label>
               <input
@@ -108,20 +83,12 @@ export default function AdminLogin() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: styles.inputBackground,
-                  border: `1px solid ${styles.inputBorder}`,
-                  borderRadius: 6,
-                  color: styles.color,
-                  fontSize: 14
-                }}
+                className="w-full px-3 py-3 bg-[#101018] border border-[#441534ff] rounded-md text-[#e9e0ee] text-sm focus:outline-none focus:border-[#cfa6db]"
               />
             </div>
             
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 14 }}>
+            <div className="mb-6">
+              <label className="block mb-1.5 text-sm">
                 Password
               </label>
               <input
@@ -129,28 +96,12 @@ export default function AdminLogin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: styles.inputBackground,
-                  border: `1px solid ${styles.inputBorder}`,
-                  borderRadius: 6,
-                  color: styles.color,
-                  fontSize: 14
-                }}
+                className="w-full px-3 py-3 bg-[#101018] border border-[#441534ff] rounded-md text-[#e9e0ee] text-sm focus:outline-none focus:border-[#cfa6db]"
               />
             </div>
 
             {error && (
-              <div style={{ 
-                marginBottom: 16, 
-                padding: 12, 
-                background: styles.errorBackground, 
-                border: `1px solid ${styles.errorBorder}`,
-                borderRadius: 6,
-                color: styles.errorText,
-                fontSize: 14 
-              }}>
+              <div className="mb-4 p-3 bg-[#4a1a1a] border border-[#8b2635] rounded-md text-[#ff8b94] text-sm">
                 {error}
               </div>
             )}
@@ -158,30 +109,17 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: loading ? styles.buttonSecondary : styles.buttonPrimary,
-                color: loading ? styles.buttonSecondaryText : styles.buttonPrimaryText,
-                border: 'none',
-                borderRadius: 6,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
+              className={`w-full py-3 border-none rounded-md text-sm font-semibold transition-colors ${
+                loading
+                  ? 'bg-[#555] text-white cursor-not-allowed'
+                  : 'bg-[#cfa6db] text-black cursor-pointer hover:bg-[#d9b5e8]'
+              }`}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div style={{ 
-            marginTop: 24, 
-            padding: 16, 
-            background: styles.accent + '10', 
-            borderRadius: 6, 
-            fontSize: 12, 
-            color: styles.muted 
-          }}>
+          <div className="mt-6 p-4 bg-[#cfa6db1a] rounded-md text-xs text-[#aaa]">
             <strong>Default credentials:</strong><br />
             Username: admin<br />
             Password: admin123

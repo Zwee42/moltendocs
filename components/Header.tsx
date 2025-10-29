@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 
 interface HeaderProps {
@@ -25,9 +26,9 @@ export function Header({ title, subtitle, breadcrumbs, actions }: HeaderProps) {
           {breadcrumbs && breadcrumbs.map((crumb, index) => (
             <React.Fragment key={index}>
               {crumb.href ? (
-                <a href={crumb.href} style={{ color: styles.accent, textDecoration: 'none', fontSize: 18 }}>
+                <Link href={crumb.href} style={{ color: styles.accent, textDecoration: 'none', fontSize: 18 }}>
                   {crumb.label}
-                </a>
+                </Link>
               ) : (
                 <span style={{ fontSize: 18, fontWeight: 600 }}>{crumb.label}</span>
               )}

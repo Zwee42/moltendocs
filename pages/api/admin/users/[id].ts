@@ -17,9 +17,9 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     try {
       await db.deleteUser(userId);
       res.status(200).json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting user:', error);
-      if (error.message === 'User not found or cannot delete admin user') {
+      if (error instanceof Error && error.message === 'User not found or cannot delete admin user') {
         res.status(400).json({ error: error.message });
       } else {
         res.status(500).json({ error: 'Failed to delete user' });
@@ -29,6 +29,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     // Update user password
     try {
       const { password } = req.body;
+      console.log('Updating password for user ID:', userId);
       
       if (!password) {
         return res.status(400).json({ error: 'Password is required' });
@@ -38,11 +39,12 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         return res.status(400).json({ error: 'Password must be at least 6 characters long' });
       }
 
+      console.log('New password length:', password.length);
       await db.updateUserPassword(userId, password);
       res.status(200).json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating user password:', error);
-      if (error.message === 'User not found') {
+      if (error instanceof Error && error.message === 'User not found') {
         res.status(404).json({ error: error.message });
       } else {
         res.status(500).json({ error: 'Failed to update user password' });

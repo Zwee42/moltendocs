@@ -17,7 +17,7 @@ function readTitleFromFile(filePath: string, fallback: string): string {
     if (typeof fm.data.title === 'string' && fm.data.title.trim().length) {
       return fm.data.title.trim();
     }
-  } catch {}
+  } catch { }
   return fallback;
 }
 
@@ -29,7 +29,7 @@ function readOrderFile(): string[] | null {
       const cfg = JSON.parse(raw) as OrderConfig;
       if (Array.isArray(cfg.order)) return cfg.order.filter((s) => typeof s === 'string');
     }
-  } catch {}
+  } catch { }
   return null;
 }
 
@@ -61,7 +61,7 @@ function buildTree(dir: string, baseSlug: string = ''): PageNode[] {
       const hasIndex = fs.existsSync(indexFile);
       const title = entry.name;
       const children = buildTree(path.join(dir, entry.name), headSlug);
-      nodes.push({ slug: headSlug, title, children: sortByOrder(children, path.join(dir, entry.name)), kind: 'dir', hasIndex });
+      nodes.push({ slug: headSlug, title, children: sortByOrder(children), kind: 'dir', hasIndex });
     } else if (entry.isFile() && entry.name.endsWith('.md')) {
       if (entry.name.toLowerCase() === 'index.md') continue;
       const filename = entry.name;
@@ -72,7 +72,7 @@ function buildTree(dir: string, baseSlug: string = ''): PageNode[] {
       nodes.push({ slug, title, filename, kind: 'file' });
     }
   }
-  nodes = sortByOrder(nodes, dir);
+  nodes = sortByOrder(nodes);
   return nodes;
 }
 
@@ -86,6 +86,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const tree = buildTree(CONTENT_DIR);
     res.status(200).json({ pages: tree });
   } catch (e) {
+    void e
     res.status(500).json({ error: 'Failed to list pages' });
   }
 }

@@ -12,13 +12,28 @@ interface MarkdownPreviewProps {
   style?: React.CSSProperties;
 }
 
+type HeadingProps = React.HTMLAttributes<HTMLHeadingElement>;
+type ParagraphProps = React.HTMLAttributes<HTMLParagraphElement>;
+type AnchorProps = React.AnchorHTMLAttributes<HTMLAnchorElement>;
+type ImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
+type CodeProps = React.HTMLAttributes<HTMLElement>;
+type PreProps = React.HTMLAttributes<HTMLPreElement>;
+type ListProps = React.HTMLAttributes<HTMLUListElement | HTMLOListElement>;
+type ListItemProps = React.HTMLAttributes<HTMLLIElement>;
+type BlockquoteProps = React.HTMLAttributes<HTMLQuoteElement>;
+type TableProps = React.TableHTMLAttributes<HTMLTableElement>;
+type TableSectionProps = React.HTMLAttributes<HTMLTableSectionElement>;
+type TableRowProps = React.HTMLAttributes<HTMLTableRowElement>;
+type TableCellProps = React.TdHTMLAttributes<HTMLTableCellElement>;
+type InlineProps = React.HTMLAttributes<HTMLElement>;
+
 export function MarkdownPreview({ content, className, style }: MarkdownPreviewProps) {
   const { theme, getThemeStyles } = useTheme();
   const styles = getThemeStyles();
 
   const customComponents = {
     // Headers
-    h1: ({ children }: any) => (
+    h1: ({ children }: HeadingProps) => (
       <h1 style={{ 
         color: styles.accent, 
         fontSize: '32px', 
@@ -29,7 +44,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </h1>
     ),
-    h2: ({ children }: any) => (
+    h2: ({ children }: HeadingProps) => (
       <h2 style={{ 
         color: styles.accent, 
         fontSize: '28px', 
@@ -40,7 +55,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </h2>
     ),
-    h3: ({ children }: any) => (
+    h3: ({ children }: HeadingProps) => (
       <h3 style={{ 
         color: styles.accent, 
         fontSize: '24px', 
@@ -51,7 +66,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </h3>
     ),
-    h4: ({ children }: any) => (
+    h4: ({ children }: HeadingProps) => (
       <h4 style={{ 
         color: styles.accent, 
         fontSize: '20px', 
@@ -62,7 +77,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </h4>
     ),
-    h5: ({ children }: any) => (
+    h5: ({ children }: HeadingProps) => (
       <h5 style={{ 
         color: styles.accent, 
         fontSize: '18px', 
@@ -73,7 +88,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </h5>
     ),
-    h6: ({ children }: any) => (
+    h6: ({ children }: HeadingProps) => (
       <h6 style={{ 
         color: styles.accent, 
         fontSize: '16px', 
@@ -86,7 +101,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Paragraphs
-    p: ({ children }: any) => (
+    p: ({ children }: ParagraphProps) => (
       <p style={{ 
         margin: '16px 0', 
         lineHeight: 1.7, 
@@ -97,7 +112,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Links
-    a: ({ children, href }: any) => (
+    a: ({ children, href }: AnchorProps) => (
       <a 
         href={href} 
         style={{ 
@@ -113,7 +128,8 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Images
-    img: ({ src, alt }: any) => (
+    img: ({ src, alt }: ImageProps) => (
+      // eslint-disable-next-line @next/next/no-img-element
       <img 
         src={src} 
         alt={alt} 
@@ -128,7 +144,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Code
-    code: ({ children, className }: any) => {
+    code: ({ children, className }: CodeProps) => {
       const isInline = !className;
       return (
         <code style={{
@@ -150,7 +166,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     },
 
     // Pre (code blocks)
-    pre: ({ children }: any) => (
+    pre: ({ children }: PreProps) => (
       <pre style={{
         background: styles.cardBackground,
         border: `1px solid ${styles.cardBorder}`,
@@ -164,7 +180,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Lists
-    ul: ({ children }: any) => (
+    ul: ({ children }: ListProps) => (
       <ul style={{ 
         margin: '16px 0', 
         paddingLeft: '24px', 
@@ -174,7 +190,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </ul>
     ),
-    ol: ({ children }: any) => (
+    ol: ({ children }: ListProps) => (
       <ol style={{ 
         margin: '16px 0', 
         paddingLeft: '24px', 
@@ -184,7 +200,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </ol>
     ),
-    li: ({ children }: any) => (
+    li: ({ children }: ListItemProps) => (
       <li style={{ 
         margin: '6px 0', 
         color: styles.color 
@@ -194,7 +210,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Blockquotes
-    blockquote: ({ children }: any) => (
+    blockquote: ({ children }: BlockquoteProps) => (
       <blockquote style={{
         borderLeft: `4px solid ${styles.accent}`,
         padding: '16px',
@@ -219,7 +235,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Tables
-    table: ({ children }: any) => (
+    table: ({ children }: TableProps) => (
       <div style={{ overflowX: 'auto', margin: '20px 0' }}>
         <table style={{
           width: '100%',
@@ -232,22 +248,22 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         </table>
       </div>
     ),
-    thead: ({ children }: any) => (
+    thead: ({ children }: TableSectionProps) => (
       <thead style={{ background: styles.cardBackground }}>
         {children}
       </thead>
     ),
-    tbody: ({ children }: any) => (
+    tbody: ({ children }: TableSectionProps) => (
       <tbody>
         {children}
       </tbody>
     ),
-    tr: ({ children }: any) => (
+    tr: ({ children }: TableRowProps) => (
       <tr style={{ borderBottom: `1px solid ${styles.cardBorder}` }}>
         {children}
       </tr>
     ),
-    th: ({ children }: any) => (
+    th: ({ children }: TableCellProps) => (
       <th style={{
         padding: '12px',
         textAlign: 'left',
@@ -258,7 +274,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
         {children}
       </th>
     ),
-    td: ({ children }: any) => (
+    td: ({ children }: TableCellProps) => (
       <td style={{
         padding: '12px',
         color: styles.color,
@@ -269,7 +285,7 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Strikethrough
-    del: ({ children }: any) => (
+    del: ({ children }: InlineProps) => (
       <del style={{ 
         textDecoration: 'line-through', 
         opacity: 0.7 
@@ -279,14 +295,14 @@ export function MarkdownPreview({ content, className, style }: MarkdownPreviewPr
     ),
 
     // Strong/Bold
-    strong: ({ children }: any) => (
+    strong: ({ children }: InlineProps) => (
       <strong style={{ fontWeight: 600 }}>
         {children}
       </strong>
     ),
 
     // Emphasis/Italic
-    em: ({ children }: any) => (
+    em: ({ children }: InlineProps) => (
       <em style={{ fontStyle: 'italic' }}>
         {children}
       </em>

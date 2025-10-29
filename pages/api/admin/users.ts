@@ -1,7 +1,8 @@
 import { withAuth, AuthenticatedRequest } from '../../../lib/middleware';
 import { getDatabase } from '../../../lib/db';
+import { NextApiResponse } from 'next';
 
-async function handler(req: AuthenticatedRequest, res: any) {
+async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   const db = await getDatabase();
 
   if (req.method === 'GET') {
@@ -32,9 +33,9 @@ async function handler(req: AuthenticatedRequest, res: any) {
         success: true, 
         user 
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating user:', error);
-      if (error.message === 'Username already exists') {
+      if (error instanceof Error && error.message === 'Username already exists') {
         res.status(409).json({ error: error.message });
       } else {
         res.status(500).json({ error: 'Failed to create user' });

@@ -52,7 +52,7 @@ function readOrderFile(): string[] {
 }
 
 function getAllDocuments(dir: string, baseSlug: string = ''): Document[] {
-  let documents: Document[] = [];
+  const documents: Document[] = [];
   
   try {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
