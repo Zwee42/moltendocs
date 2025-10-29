@@ -40,7 +40,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
   return (
     <div className={geistSans.className} style={{ background: styles.background, color: styles.color, minHeight: '100vh' }}>
       <Head>
-        <title>{title || slug} - MoltenDocs</title>
+        <title>{`${title || slug} - MoltenDocs`}</title>
       </Head>
       
       <Header 
