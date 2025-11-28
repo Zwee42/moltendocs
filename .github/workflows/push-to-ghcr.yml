@@ -1,4 +1,4 @@
-name: Build and Push to GHCR
+name: Build and Push to GHCR (Blue/Green)
 
 on:
   push:
@@ -14,7 +14,6 @@ jobs:
 
     steps:
       - name: Checkout repository
-      # Gets the source code
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -30,14 +29,24 @@ jobs:
       - name: Prepare Image Tags
         id: vars
         run: |
-          IMAGE="ghcr.io/${{ github.repository_owner }}/nextapp"
+          # Convert repo owner to lowercase
+          OWNER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER}/nextapp"
+
           SHA_TAG="${IMAGE}:sha-${GITHUB_SHA::7}"
           LATEST_TAG="${IMAGE}:latest"
-          DATE_TAG="${IMAGE}:$(date +'%Y%m%d-%H%M')"
+
+          BLUE_TAG="${IMAGE}:blue"
+          GREEN_TAG="${IMAGE}:green"
+          BLUE_TIMESTAMP="${IMAGE}:blue-$(date +'%Y%m%d-%H%M')"
+          GREEN_TIMESTAMP="${IMAGE}:green-$(date +'%Y%m%d-%H%M')"
 
           echo "sha_tag=$SHA_TAG" >> $GITHUB_OUTPUT
           echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
-          echo "date_tag=$DATE_TAG" >> $GITHUB_OUTPUT
+          echo "blue_tag=$BLUE_TAG" >> $GITHUB_OUTPUT
+          echo "green_tag=$GREEN_TAG" >> $GITHUB_OUTPUT
+          echo "blue_ts_tag=$BLUE_TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "green_ts_tag=$GREEN_TIMESTAMP" >> $GITHUB_OUTPUT
 
       - name: Build and Push Image
         uses: docker/build-push-action@v5
@@ -48,11 +57,17 @@ jobs:
           tags: |
             ${{ steps.vars.outputs.latest_tag }}
             ${{ steps.vars.outputs.sha_tag }}
-            ${{ steps.vars.outputs.date_tag }}
+            ${{ steps.vars.outputs.blue_tag }}
+            ${{ steps.vars.outputs.green_tag }}
+            ${{ steps.vars.outputs.blue_ts_tag }}
+            ${{ steps.vars.outputs.green_ts_tag }}
 
       - name: Output Pushed Tags
         run: |
-          echo "Pushed:"
+          echo "Pushed images:"
           echo "  - ${{ steps.vars.outputs.latest_tag }}"
           echo "  - ${{ steps.vars.outputs.sha_tag }}"
-          echo "  - ${{ steps.vars.outputs.date_tag }}"
+          echo "  - ${{ steps.vars.outputs.blue_tag }}"
+          echo "  - ${{ steps.vars.outputs.green_tag }}"
+          echo "  - ${{ steps.vars.outputs.blue_ts_tag }}"
+          echo "  - ${{ steps.vars.outputs.green_ts_tag }}"
