@@ -4,6 +4,7 @@ import { Geist } from 'next/font/google';
 import { AdminHeader } from '@/components/Header';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { generateSlugFromTitle, sanitizeSlug } from '@/lib/utils';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -90,19 +91,8 @@ export default function AdminDashboard() {
 
   const handleCreateDocument = () => {
     if (newPageTitle && newPageSlug) {
-      // Ensure slug uses dashes for spaces
-      const sanitizedSlug = newPageSlug.replace(/\s+/g, '-');
-      router.push(`/admin/editor/${sanitizedSlug}?title=${encodeURIComponent(newPageTitle)}&create=1`);
+      router.push(`/admin/editor/${sanitizeSlug(newPageSlug)}?title=${encodeURIComponent(newPageTitle)}&create=1`);
     }
-  };
-
-  const generateSlugFromTitle = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
   };
 
   const handleTitleChange = (title: string) => {

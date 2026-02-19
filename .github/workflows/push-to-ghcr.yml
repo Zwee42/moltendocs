@@ -1,9 +1,7 @@
-name: CI/CD
+name: Push to GHCR
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
   workflow_dispatch:
 
@@ -12,29 +10,11 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-      - name: Install dependencies
-        run: npm install
-      - name: Lint
-        run: npm run lint
-
   build-and-push:
-    needs: lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    # Only push on merge to main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
