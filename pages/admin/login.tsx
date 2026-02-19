@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Geist } from 'next/font/google';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,21 +16,8 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if already authenticated
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          router.push('/admin');
-        }
-      } catch (err) {
-        void err;
-        // Not authenticated, stay on login page
-      }
-    };
-    checkAuth();
-  }, [router]);
+  // Redirect to admin if already authenticated
+  useAuth({ redirectIfAuthenticated: true });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

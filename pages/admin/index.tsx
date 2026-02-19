@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Geist } from 'next/font/google';
 import { AdminHeader } from '@/components/Header';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,40 +17,14 @@ type Document = {
   lastModified?: string;
 };
 
-type User = { id: number; username: string };
-
 export default function AdminDashboard() {
-  const [user, setUser] = useState<User | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-          await loadDocuments();
-        } else {
-          router.push('/admin/login');
-        }
-      } catch (err) {
-        void err;
-        router.push('/admin/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   const loadDocuments = async () => {
     try {
@@ -62,15 +37,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/admin/login');
-    } catch (err) {
-      void err;
-      console.error('Logout failed:', err);
-    }
-  };
+  const { user, loading, logout } = useAuth({
+    onAuthenticated: loadDocuments
+  });
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -121,7 +90,9 @@ export default function AdminDashboard() {
 
   const handleCreateDocument = () => {
     if (newPageTitle && newPageSlug) {
-      router.push(`/admin/editor/${newPageSlug}?title=${encodeURIComponent(newPageTitle)}&create=1`);
+      // Ensure slug uses dashes for spaces
+      const sanitizedSlug = newPageSlug.replace(/\s+/g, '-');
+      router.push(`/admin/editor/${sanitizedSlug}?title=${encodeURIComponent(newPageTitle)}&create=1`);
     }
   };
 
@@ -136,9 +107,8 @@ export default function AdminDashboard() {
 
   const handleTitleChange = (title: string) => {
     setNewPageTitle(title);
-    if (!newPageSlug) {
-      setNewPageSlug(generateSlugFromTitle(title));
-    }
+    // Always update slug based on title (user can still manually edit it after)
+    setNewPageSlug(generateSlugFromTitle(title));
   };
 
   const handleDeleteDocument = async (slug: string, title: string) => {
@@ -180,7 +150,7 @@ export default function AdminDashboard() {
         title="Admin"
         subtitle="Manage your documentation"
         user={user}
-        onLogout={handleLogout}
+        onLogout={logout}
         actions={
           <Link
             href="/admin/users"
