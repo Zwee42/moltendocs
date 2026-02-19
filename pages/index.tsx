@@ -130,7 +130,7 @@ export default function Home() {
               display: 'inline-block'
             }}>
               <span style={{ fontSize: 14, color: styles.accent, fontWeight: 600 }}>
-                📚 {documents.length} documents available
+                 {documents.length} documents available
               </span>
             </div>
           )}
@@ -258,7 +258,7 @@ export default function Home() {
                           color: styles.muted,
                           lineHeight: 1.5
                         }}>
-                          {doc.excerpt}
+                          {/* {doc.excerpt} */}
                         </p>
                       )}
                     </div>
@@ -272,9 +272,9 @@ export default function Home() {
                     fontSize: 12,
                     color: styles.muted
                   }}>
-                    <span>{doc.slug}</span>
+                    {/* <span>{doc.slug}</span> */}
                     {doc.lastModified && (
-                      <span>
+                      <span style={{marginLeft: 'auto'}}>
                         {new Date(doc.lastModified).toLocaleDateString()}
                       </span>
                     )}
@@ -293,7 +293,7 @@ export default function Home() {
           color: styles.muted
         }}>
           <p style={{ margin: 0, fontSize: 14 }}>
-            Powered by MoltenDocs • Built with Next.js
+            Powered by MoltenDocs 
           </p>
         </footer>
       </main>
