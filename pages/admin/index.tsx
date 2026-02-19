@@ -288,11 +288,11 @@ export default function AdminDashboard() {
                   </span>
                   <div className="flex-1">
                     <div className="font-semibold mb-1">{doc.title}</div>
-                    {doc.excerpt && (
+                    {/* {doc.excerpt && (
                       <div className="text-xs text-[#aaa] mb-1">
                         {doc.excerpt}
                       </div>
-                    )}
+                    )} */}
                     <div className="text-[11px] text-[#aaa]">
                       {doc.slug} • Last modified: {doc.lastModified ? new Date(doc.lastModified).toLocaleDateString() : 'Unknown'}
                     </div>
