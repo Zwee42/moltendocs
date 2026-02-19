@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { useTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { isValidTitle, getWordCount } from '@/lib/utils';
 import { EditorToolbar } from '@/components/EditorToolbar';
 import { MarkdownPreview } from '@/components/MarkdownPreview';
 
@@ -57,13 +58,13 @@ export default function DocumentEditor() {
 
 
     // Validate title - must have non-whitespace content
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
+    if (!isValidTitle(title)) {
       if (isManual) {
         setError('Title cannot be empty');
       }
       return false;
     }
+    const trimmedTitle = title.trim();
 
     setSaving(true);
     if (isManual) {
@@ -130,8 +131,7 @@ export default function DocumentEditor() {
 
   // Count words
   useEffect(() => {
-    const words = content.trim().split(/\s+/).filter(word => word.length > 0).length;
-    setWordCount(words);
+    setWordCount(getWordCount(content));
   }, [content]);
 
   // Auto-save with debounce - only trigger after initial document load
@@ -140,7 +140,7 @@ export default function DocumentEditor() {
     if (!hasLoadedRef.current) return;
     
     // Only auto-save if there's actual content to save
-    if (title.trim() || content.trim()) {
+    if (isValidTitle(title) || content.trim()) {
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
       }
