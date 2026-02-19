@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import { Geist } from 'next/font/google';
 import { AdminHeader } from '@/components/Header';
+import { useAuth } from '@/lib/auth';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,12 +14,8 @@ type User = {
   created_at: string;
 };
 
-type CurrentUser = { id: number; username: string };
-
 export default function AdminUsers() {
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,34 +24,6 @@ export default function AdminUsers() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [working, setWorking] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-          await loadUsers();
-        } else {
-          router.push('/admin/login');
-        }
-      } catch (err) {
-        void err;
-        router.push('/admin/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/admin/login');
-  };
 
   const loadUsers = async () => {
     try {
@@ -66,6 +34,10 @@ export default function AdminUsers() {
       console.error('Failed to load users:', err);
     }
   };
+
+  const { user: currentUser, loading, logout } = useAuth({
+    onAuthenticated: loadUsers
+  });
 
   const handleCreateUser = async () => {
     if (!newUsername || !newPassword) return;
@@ -180,7 +152,7 @@ export default function AdminUsers() {
         title="User Management"
         subtitle="Manage admin users and their permissions"
         user={currentUser}
-        onLogout={handleLogout}
+        onLogout={logout}
       />
 
       <main className="max-w-[1000px] mx-auto p-6">

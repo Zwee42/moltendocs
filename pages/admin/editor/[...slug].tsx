@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { useTheme } from '@/lib/theme';
+import { useAuth } from '@/lib/auth';
 import { EditorToolbar } from '@/components/EditorToolbar';
 import { MarkdownPreview } from '@/components/MarkdownPreview';
 
@@ -16,8 +17,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-type User = { id: number; username: string };
-
 type DocumentData = {
   frontmatter: Record<string, unknown>;
   content: string;
@@ -30,8 +29,10 @@ export default function DocumentEditor() {
   const { theme, toggleTheme, getThemeStyles } = useTheme();
   const styles = getThemeStyles();
   
+  // Auth
+  const { user, loading: authLoading } = useAuth();
+  
   // State
-  const [user, setUser] = useState<User | null>(null);
   const [, setDocument] = useState<DocumentData | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -46,12 +47,30 @@ export default function DocumentEditor() {
   // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasLoadedRef = useRef(false);
 
-  // Auto-save functionality
-  const autoSave = useCallback(async () => {
-    if (!slug || !Array.isArray(slug) || saving) return;
+  // Unified save function for both manual and auto-save
+  const saveDocument = useCallback(async (isManual: boolean = false): Promise<boolean> => {
+    if (!slug || !Array.isArray(slug) || saving) return false;
     
+    
+
+
+    // Validate title - must have non-whitespace content
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      if (isManual) {
+        setError('Title cannot be empty');
+      }
+      return false;
+    }
+
     setSaving(true);
+    if (isManual) {
+      setError('');
+      setSuccess('');
+    }
+
     try {
       let res;
       
@@ -61,9 +80,9 @@ export default function DocumentEditor() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             slug: slug.join('/'),
-            title,
+            title: trimmedTitle,
             content,
-            frontmatter: { title }
+            frontmatter: { title: trimmedTitle }
           })
         });
       } else {
@@ -71,22 +90,43 @@ export default function DocumentEditor() {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            frontmatter: { title },
+            frontmatter: { title: trimmedTitle },
             content
           })
         });
       }
 
-      if (res.ok && isNewDocument) {
-        setIsNewDocument(false);
+      if (res.ok) {
+        if (isNewDocument) {
+          setIsNewDocument(false);
+          if (isManual) {
+            router.replace(`/admin/editor/${slug.join('/')}`);
+          }
+        }
+        if (isManual) {
+          setSuccess('Document saved successfully!');
+          setTimeout(() => setSuccess(''), 3000);
+        }
+        return true;
+      } else {
+        if (isManual) {
+          const data = await res.json();
+          setError(data.error || 'Failed to save document');
+        }
+        return false;
       }
     } catch (err) {
       void err;
-      console.error('Auto-save failed:', err);
+      if (isManual) {
+        setError('Failed to save document');
+      } else {
+        console.error('Auto-save failed:', err);
+      }
+      return false;
     } finally {
       setSaving(false);
     }
-  }, [slug, saving, isNewDocument, title, content]);
+  }, [slug, saving, isNewDocument, title, content, router]);
 
   // Count words
   useEffect(() => {
@@ -94,13 +134,17 @@ export default function DocumentEditor() {
     setWordCount(words);
   }, [content]);
 
-  // Auto-save with debounce
+  // Auto-save with debounce - only trigger after initial document load
   useEffect(() => {
-    if (title || content) {
+    // Don't auto-save until document has been loaded
+    if (!hasLoadedRef.current) return;
+    
+    // Only auto-save if there's actual content to save
+    if (title.trim() || content.trim()) {
       if (autoSaveTimeoutRef.current) {
         clearTimeout(autoSaveTimeoutRef.current);
       }
-      autoSaveTimeoutRef.current = setTimeout(autoSave, 2000);
+      autoSaveTimeoutRef.current = setTimeout(() => saveDocument(false), 2000);
     }
     
     return () => {
@@ -108,7 +152,13 @@ export default function DocumentEditor() {
         clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, content, autoSave]);
+  }, [title, content, saveDocument]);
+
+  // Keep a ref to the latest saveDocument function for keyboard shortcuts
+  const saveDocumentRef = useRef(saveDocument);
+  useEffect(() => {
+    saveDocumentRef.current = saveDocument;
+  }, [saveDocument]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -116,7 +166,7 @@ export default function DocumentEditor() {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 's') {
           e.preventDefault();
-          handleSave();
+          saveDocumentRef.current(true);
         } else if (e.key === 'p') {
           e.preventDefault();
           setViewMode(viewMode === 'preview' ? 'editor' : 'preview');
@@ -126,7 +176,6 @@ export default function DocumentEditor() {
 
     window.document.addEventListener('keydown', handleKeyDown);
     return () => window.document.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 
   // Insert text at cursor position
@@ -147,32 +196,9 @@ export default function DocumentEditor() {
     }, 0);
   };
 
-  // Authentication check
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          router.push('/admin/login');
-          return;
-        }
-      } catch (err) {
-          void err;
-        router.push('/admin/login');
-        return;
-      }
-      setLoading(false);
-    };
-
-    checkAuth();
-  }, [router]);
-
   // Load document
   useEffect(() => {
-    if (!user || !slug || !Array.isArray(slug)) return;
+    if (authLoading || !user || !slug || !Array.isArray(slug)) return;
 
     const loadDocument = async () => {
       if (create === 'true') {
@@ -180,6 +206,8 @@ export default function DocumentEditor() {
         setTitle(titleParam as string || '');
         setContent('');
         setLoading(false);
+        // Mark as loaded so auto-save can start working
+        hasLoadedRef.current = true;
         return;
       }
 
@@ -203,65 +231,15 @@ export default function DocumentEditor() {
         setError('Failed to load document');
       } finally {
         setLoading(false);
+        // Mark as loaded so auto-save can start working
+        hasLoadedRef.current = true;
       }
     };
 
     loadDocument();
-  }, [user, slug, create, titleParam]);
+  }, [authLoading, user, slug, create, titleParam]);
 
-  // Save document
-  const handleSave = async () => {
-    if (!slug || !Array.isArray(slug) || saving) return;
-
-    setSaving(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      let res;
-      
-      if (isNewDocument) {
-        res = await fetch('/api/admin/documents', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            slug: slug.join('/'),
-            title,
-            content,
-            frontmatter: { title }
-          })
-        });
-      } else {
-        res = await fetch(`/api/admin/documents/${slug.join('/')}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            frontmatter: { title },
-            content
-          })
-        });
-      }
-
-      if (res.ok) {
-        setSuccess('Document saved successfully!');
-        if (isNewDocument) {
-          setIsNewDocument(false);
-          router.replace(`/admin/editor/${slug.join('/')}`);
-        }
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
-        const data = await res.json();
-        setError(data.error || 'Failed to save document');
-      }
-    } catch (err) {
-      void err;
-      setError('Failed to save document');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className={`${geistSans.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
         <div style={{ padding: 24 }}>Loading...</div>
