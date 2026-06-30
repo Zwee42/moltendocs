@@ -3,17 +3,11 @@ import Head from 'next/head';
 import path from 'path';
 import fs from 'fs';
 import matter from 'gray-matter';
-import dynamic from 'next/dynamic';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
-import rehypeRaw from 'rehype-raw';
 import { useTheme } from '@/lib/theme';
 import { Header } from '@/components/Header';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { Geist } from 'next/font/google';
 import Link from "next/link";
-
-
-const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -135,91 +129,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
             lineHeight: 1.6,
             fontSize: 16
           }}>
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm, remarkBreaks]} 
-              rehypePlugins={[rehypeRaw]}
-              components={{
-                h1: ({ children }) => (
-                  <h1 style={{ color: styles.accent, fontSize: 32, marginBottom: 16, marginTop: 24 }}>
-                    {children}
-                  </h1>
-                ),
-                h2: ({ children }) => (
-                  <h2 style={{ color: styles.accent, fontSize: 24, marginBottom: 12, marginTop: 20 }}>
-                    {children}
-                  </h2>
-                ),
-                h3: ({ children }) => (
-                  <h3 style={{ color: styles.accent, fontSize: 20, marginBottom: 8, marginTop: 16 }}>
-                    {children}
-                  </h3>
-                ),
-                p: ({ children }) => (
-                  <p style={{ marginBottom: 16, color: styles.color }}>
-                    {children}
-                  </p>
-                ),
-                code: ({ children, className }) => {
-                  const isBlock = className?.includes('language-');
-                  return isBlock ? (
-                    <code style={{
-                      background: styles.cardBackground,
-                      border: `1px solid ${styles.cardBorder}`,
-                      borderRadius: 6,
-                      padding: 16,
-                      display: 'block',
-                      fontFamily: 'var(--font-geist-mono)',
-                      fontSize: 14,
-                      overflow: 'auto',
-                      color: styles.color
-                    }}>
-                      {children}
-                    </code>
-                  ) : (
-                    <code style={{
-                      background: styles.cardBackground,
-                      border: `1px solid ${styles.cardBorder}`,
-                      borderRadius: 3,
-                      padding: '2px 6px',
-                      fontFamily: 'var(--font-geist-mono)',
-                      fontSize: 14,
-                      color: styles.color
-                    }}>
-                      {children}
-                    </code>
-                  );
-                },
-                a: ({ children, href }) => (
-                  <a href={href} style={{ color: styles.accent, textDecoration: 'underline' }}>
-                    {children}
-                  </a>
-                ),
-                ul: ({ children }) => (
-                  <ul style={{ marginBottom: 16, paddingLeft: 24, color: styles.color }}>
-                    {children}
-                  </ul>
-                ),
-                ol: ({ children }) => (
-                  <ol style={{ marginBottom: 16, paddingLeft: 24, color: styles.color }}>
-                    {children}
-                  </ol>
-                ),
-                blockquote: ({ children }) => (
-                  <blockquote style={{
-                    borderLeft: `4px solid ${styles.accent}`,
-                    paddingLeft: 16,
-                    marginLeft: 0,
-                    marginBottom: 16,
-                    fontStyle: 'italic',
-                    color: styles.muted
-                  }}>
-                    {children}
-                  </blockquote>
-                )
-              }}
-            >
-              {content}
-            </ReactMarkdown>
+            <MarkdownRenderer content={content} />
           </div>
           
           {nextSlug && (
