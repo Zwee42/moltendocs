@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
+import { IconSun, IconMoon, IconChevronRight } from '@/lib/icons';
 
 interface HeaderProps {
   title: string;
@@ -33,7 +34,7 @@ export function Header({ title, subtitle, breadcrumbs, actions }: HeaderProps) {
                 <span style={{ fontSize: 18, fontWeight: 600 }}>{crumb.label}</span>
               )}
               {index < breadcrumbs.length - 1 && (
-                <span style={{ color: styles.muted, fontSize: 18 }}>→</span>
+                <span style={{ color: styles.muted, fontSize: 18 }}><IconChevronRight /></span>
               )}
             </React.Fragment>
           ))}
@@ -59,7 +60,7 @@ export function Header({ title, subtitle, breadcrumbs, actions }: HeaderProps) {
             cursor: 'pointer'
           }}
         >
-          {theme === 'dark' ? '☀️' : '🌙'}
+          {theme === 'dark' ? <IconSun /> : <IconMoon />}
         </button>
         {actions}
       </div>

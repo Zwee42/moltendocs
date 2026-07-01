@@ -29,7 +29,7 @@ export default function DocsIndex({ pages }: Props) {
   };
 
   return (
-    <div className={geistSans.className} style={{ background: styles.background, color: styles.color, minHeight: '100vh' }}>
+    <div className={geistSans.className} style={{ background: styles.background, color: styles.color, height: '100vh', overflow: 'hidden' }}>
       <Head>
         <title>Documentation - MoltenDocs</title>
       </Head>

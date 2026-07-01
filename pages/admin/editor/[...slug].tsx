@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { isValidTitle, getWordCount } from '@/lib/utils';
 import { EditorToolbar } from '@/components/EditorToolbar';
 import { MarkdownPreview } from '@/components/MarkdownPreview';
+import { IconArrowLeft, IconSun, IconMoon } from '@/lib/icons';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -260,7 +261,7 @@ export default function DocumentEditor() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h1 style={{ margin: 0, fontSize: 18 }}>
             <Link href="/admin" style={{ color: styles.accent, textDecoration: 'none' }}>
-              ← Admin
+              <IconArrowLeft /> Admin
             </Link>
           </h1>
           <span style={{ color: styles.muted }}>|</span>
@@ -285,7 +286,7 @@ export default function DocumentEditor() {
               cursor: 'pointer'
             }}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <IconSun /> : <IconMoon />}
           </button>
         </div>
       </header>
