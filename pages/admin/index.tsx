@@ -5,6 +5,7 @@ import { AdminHeader } from '@/components/Header';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { generateSlugFromTitle, sanitizeSlug } from '@/lib/utils';
+import { IconGrip } from '@/lib/icons';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -244,7 +245,7 @@ export default function AdminDashboard() {
                   }`}
                 >
                   <span className="mr-3 text-[#aaa] text-lg">
-                    ⋮⋮
+                    <IconGrip />
                   </span>
                   <div className="flex-1">
                     <div className="font-semibold mb-1">{doc.title}</div>

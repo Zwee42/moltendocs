@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/theme";
 import Link from "next/link";
+import { IconSun, IconMoon, IconBook, IconPen, IconFile } from "@/lib/icons";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +43,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className={`${geistSans.className} ${geistMono.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
+    <div className={`${geistSans.className} ${geistMono.className}`} style={{ background: styles.background, color: styles.color, height: '100vh', overflow: 'hidden' }}>
       <header style={{ 
         padding: '24px', 
         borderBottom: `1px solid ${styles.headerBorder}`,
@@ -72,7 +73,7 @@ export default function Home() {
               gap: 6
             }}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <IconSun /> : <IconMoon />}
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
           <Link
@@ -160,7 +161,7 @@ export default function Home() {
             padding: 48,
             color: styles.muted 
           }}>
-            <div style={{ fontSize: 18, marginBottom: 8 }}>📖</div>
+            <div style={{ fontSize: 18, marginBottom: 8 }}><IconBook /></div>
             Loading documents...
           </div>
         )}
@@ -174,7 +175,7 @@ export default function Home() {
             borderRadius: 8,
             color: styles.muted 
           }}>
-            <div style={{ fontSize: 32, marginBottom: 16 }}>📝</div>
+            <div style={{ fontSize: 32, marginBottom: 16 }}><IconPen /></div>
             <h4 style={{ margin: '0 0 8px 0', fontSize: 18 }}>No documents yet</h4>
             <p style={{ margin: '0 0 24px 0' }}>
               Get started by creating your first document in the admin panel.
@@ -240,7 +241,7 @@ export default function Home() {
                       fontSize: 20,
                       color: styles.accent
                     }}>
-                      📄
+                      <IconFile />
                     </span>
                     <div style={{ flex: 1 }}>
                       <h4 style={{ 

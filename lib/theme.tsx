@@ -92,6 +92,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('theme', newTheme);
   };
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const styles = theme === 'light' ? lightTheme : darkTheme;
+    root.style.setProperty('--accent', styles.accent);
+    root.style.setProperty('--accent-hover', theme === 'light' ? '#818cf8' : '#dfc1e8');
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
+
   const getThemeStyles = () => {
     return theme === 'light' ? lightTheme : darkTheme;
   };

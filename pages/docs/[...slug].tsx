@@ -8,6 +8,9 @@ import { Header } from '@/components/Header';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { Geist } from 'next/font/google';
 import Link from "next/link";
+import { IconArrowRight, IconFileLines, IconFolder } from '@/lib/icons';
+import { TocTree } from '@/components/TocTree';
+import { useState } from 'react';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,23 +19,25 @@ const geistSans = Geist({
 
 type PageNode = { slug: string; title: string; filename?: string; children?: PageNode[]; kind: 'dir' | 'file'; hasIndex?: boolean };
 
-type Props = { slug: string; content: string; title: string; pages: PageNode[]; nextSlug: string | null };
+type TocNode = { id: string; text: string; level: number; children: TocNode[] };
 
-export default function DocPage({ slug, content, title, pages, nextSlug }: Props) {
+type Props = { slug: string; content: string; title: string; pages: PageNode[]; nextSlug: string | null; toc: TocNode[] };
+
+export default function DocPage({ slug, content, title, pages, nextSlug, toc }: Props) {
   const { getThemeStyles } = useTheme();
   const styles = getThemeStyles();
+  const [expandedPages, setExpandedPages] = useState<Record<string, boolean>>({});
   
   const headSlug = slug.split('/')[0];
-  const headNode = pages.find((p) => p.slug === headSlug);
-  const headHref = (() => {
-    if (!headNode) return `/docs/${headSlug}`;
-    if (headNode.hasIndex) return `/docs/${headSlug}`; // index route resolves to index.md
-    const firstChild = (headNode.children || []).find((c) => c.kind === 'file' || (c.children && c.children.length));
-    return firstChild ? `/docs/${firstChild.slug}` : `/docs/${headSlug}`;
-  })();
+
+  const hasMultipleH1 = toc.length > 1;
+
+  const togglePage = (pageSlug: string) => {
+    setExpandedPages(prev => ({ ...prev, [pageSlug]: !prev[pageSlug] }));
+  };
   
   return (
-    <div className={geistSans.className} style={{ background: styles.background, color: styles.color, minHeight: '100vh' }}>
+    <div className={geistSans.className} style={{ background: styles.background, color: styles.color, height: '100vh', overflow: 'hidden' }}>
       <Head>
         <title>{`${title || slug} - MoltenDocs`}</title>
       </Head>
@@ -74,31 +79,65 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
           <div style={{ fontWeight: 600, marginBottom: 16, color: styles.accent }}>Navigation</div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {pages.map((node) => {
+              const isActive = node.slug === headSlug && (slug === headSlug || slug === `${headSlug}/index`);
+              const isExpanded = expandedPages[node.slug] || (node.slug === headSlug && isActive);
+              const showDropdown = node.slug === headSlug && hasMultipleH1;
               return (
                 <div key={node.slug}>
-                  <Link 
-                    href={node.slug === headSlug ? headHref : `/docs/${node.slug}`} 
-                    style={{ 
-                      display: 'block', 
-                      padding: '8px 12px', 
-                      borderRadius: 6, 
-                      background: node.slug === headSlug && (slug === headSlug || slug === `${headSlug}/index`) ? styles.buttonPrimary : 'transparent',
-                      color: node.slug === headSlug && (slug === headSlug || slug === `${headSlug}/index`) ? styles.buttonPrimaryText : styles.color,
-                      textDecoration: 'none',
-                      fontSize: 14,
-                      fontWeight: 500
-                    }}
-                  >
-                    {node.title}
-                  </Link>
-                  {node.slug === headSlug && node.children && node.children.length > 0 && (
+                  {showDropdown ? (
+                    <div
+                      onClick={() => togglePage(node.slug)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '8px 12px',
+                        borderRadius: 6,
+                        background: isActive ? styles.buttonPrimary : 'transparent',
+                        color: isActive ? styles.buttonPrimaryText : styles.color,
+                        fontSize: 14,
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {node.kind === 'dir' ? <IconFolder /> : <IconFileLines />}
+                      {node.title}
+                    </div>
+                  ) : (
+                    <Link 
+                      href={`/docs/${node.slug}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '8px 12px',
+                        borderRadius: 6,
+                        background: isActive ? styles.buttonPrimary : 'transparent',
+                        color: isActive ? styles.buttonPrimaryText : styles.color,
+                        textDecoration: 'none',
+                        fontSize: 14,
+                        fontWeight: 500
+                      }}
+                    >
+                      {node.kind === 'dir' ? <IconFolder /> : <IconFileLines />}
+                      {node.title}
+                    </Link>
+                  )}
+                  {showDropdown && isExpanded && (
+                    <div style={{ marginLeft: 16, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <TocTree nodes={toc} />
+                    </div>
+                  )}
+                  {!showDropdown && node.slug === headSlug && node.children && node.children.length > 0 && (
                     <div style={{ marginLeft: 16, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {node.children.map((child) => (
                         <Link 
                           key={child.slug} 
                           href={`/docs/${child.slug}`} 
                           style={{ 
-                            display: 'block', 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
                             padding: '6px 12px', 
                             borderRadius: 6, 
                             background: child.slug === slug ? styles.accent : 'transparent',
@@ -107,6 +146,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
                             fontSize: 13
                           }}
                         >
+                          <IconFileLines />
                           {child.title}
                         </Link>
                       ))}
@@ -146,7 +186,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug }: Props
                   fontWeight: 500
                 }}
               >
-                Next →
+                Next <IconArrowRight />
               </Link>
             </div>
           )}
@@ -219,6 +259,40 @@ function listTree(dir: string, baseSlug = ''): PageNode[] {
   return nodes;
 }
 
+function extractToc(markdown: string): TocNode[] {
+  const root: TocNode[] = [];
+  const lines = markdown.split('\n');
+  let inCodeBlock = false;
+  for (const line of lines) {
+    if (line.trimStart().startsWith('```')) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+    const match = line.match(/^(#{1,3})\s+(.+)$/);
+    if (match) {
+      const level = match[1].length;
+      const text = match[2].trim();
+      const id = text.toLowerCase().replace(/[^\w]+/g, '-').replace(/(^-|-$)/g, '');
+      const node: TocNode = { id, text, level, children: [] };
+      if (level === 1) {
+        root.push(node);
+      } else {
+        let parent = root.length > 0 ? root[root.length - 1] : null;
+        for (let i = level - 1; i > 1 && parent && parent.children.length > 0; i--) {
+          parent = parent.children[parent.children.length - 1];
+        }
+        if (parent) {
+          parent.children.push(node);
+        } else {
+          root.push(node);
+        }
+      }
+    }
+  }
+  return root;
+}
+
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   const slugParts = (ctx.params?.slug as string[]) || ['sample'];
   const slug = slugParts.join('/');
@@ -245,6 +319,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
 
   const pages = listTree(contentDir);
 
+  const toc = extractToc(content);
+
   // Next within head
   const headSlug = slug.split('/')[0];
   const headNode = pages.find((p) => p.slug === headSlug);
@@ -263,7 +339,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
     if (idx >= 0 && idx < flat.length - 1) nextSlug = flat[idx + 1];
   }
 
-  return { props: { slug, content, title, pages, nextSlug } };
+  return { props: { slug, content, title, pages, nextSlug, toc } };
 };
 
 
