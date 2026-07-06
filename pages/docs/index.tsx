@@ -1,35 +1,40 @@
-import { GetServerSideProps } from 'next';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
-import path from 'path';
-import fs from 'fs';
-import matter from 'gray-matter';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
 import { Header } from '@/components/Header';
-import { Geist } from 'next/font/google';
-import Link from "next/link";
+import { IconFile, IconBook, IconPen } from '@/lib/icons';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+type Document = { 
+  slug: string; 
+  title: string; 
+  excerpt?: string;
+  lastModified?: string;
+};
 
-type PageNode = { slug: string; title: string; filename?: string; children?: PageNode[]; kind: 'dir' | 'file'; hasIndex?: boolean };
-
-type Props = { pages: PageNode[] };
-
-export default function DocsIndex({ pages }: Props) {
+export default function DocsIndex() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const { getThemeStyles } = useTheme();
   const styles = getThemeStyles();
 
-  const getFirstLink = (node: PageNode): string => {
-    if (node.hasIndex) return `/docs/${node.slug}`;
-    if (node.kind === 'file') return `/docs/${node.slug}`;
-    const firstChild = (node.children || []).find((c) => c.kind === 'file' || (c.children && c.children.length));
-    return firstChild ? `/docs/${firstChild.slug}` : `/docs/${node.slug}`;
-  };
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/documents');
+        const data = await res.json();
+        setDocuments(data.documents || []);
+      } catch (err) {
+        console.error('Failed to load documents:', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   return (
-    <div className={geistSans.className} style={{ background: styles.background, color: styles.color, height: '100vh', overflow: 'hidden' }}>
+    <>
       <Head>
         <title>Documentation - MoltenDocs</title>
       </Head>
@@ -41,141 +46,154 @@ export default function DocsIndex({ pages }: Props) {
           { label: 'MoltenDocs', href: '/' },
           { label: 'Docs' }
         ]}
-        actions={
-          <Link  
-            href="/admin"
-            style={{
-              padding: '6px 12px',
-              background: styles.buttonSecondary,
-              color: styles.buttonSecondaryText,
-              textDecoration: 'none',
-              borderRadius: 4,
-              fontSize: 12
-            }}
-          >
-            Admin
-          </Link>
-        }
       />
       
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: 32 }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-          gap: 24 
-        }}>
-          {pages.map((node) => (
-            <Link
-              key={node.slug}
-              href={getFirstLink(node)}
-              style={{
-                display: 'block',
-                padding: 24,
-                background: styles.cardBackground,
-                borderRadius: 12,
-                border: `1px solid ${styles.headerBorder}`,
-                textDecoration: 'none',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = `0 8px 24px rgba(0,0,0,0.15)`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              <h3 style={{ 
-                margin: 0, 
-                marginBottom: 8, 
-                color: styles.accent,
-                fontSize: 18,
-                fontWeight: 600
-              }}>
-                {node.title}
-              </h3>
-              <p style={{ 
-                margin: 0, 
-                color: styles.muted, 
-                fontSize: 14 
-              }}>
-                {node.kind === 'dir' && node.children 
-                  ? `${node.children.length} page${node.children.length !== 1 ? 's' : ''}`
-                  : 'View documentation'
-                }
-              </p>
-            </Link>
-          ))}
-        </div>
-
-        {pages.length === 0 && (
+      <main style={{ maxWidth: 1560, margin: '0 auto', padding: 32, overflowY: 'auto', flex: 1, width: '100%' }}>
+        {loading && (
           <div style={{ 
             textAlign: 'center', 
-            padding: 64, 
+            padding: 48,
             color: styles.muted 
           }}>
-            <p>No documentation available yet.</p>
+            <div style={{ fontSize: 18, marginBottom: 8 }}><IconBook /></div>
+            Loading documents...
           </div>
         )}
+
+        {!loading && documents.length === 0 && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: 48,
+            background: styles.cardBackground,
+            border: `1px solid ${styles.cardBorder}`,
+            borderRadius: 8,
+            color: styles.muted 
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 16 }}><IconPen /></div>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: 18 }}>No documents yet</h4>
+            <p style={{ margin: 0, fontSize: 14, color: styles.muted }}>
+              Content is being prepared. Check back soon.
+            </p>
+          </div>
+        )}
+
+        {!loading && documents.length > 0 && (
+          <>
+            {/* Table view — large screens */}
+            <div className="docs-table-view">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${styles.cardBorder}` }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 14, fontWeight: 600, color: styles.h3Color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Document
+                    </th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, fontWeight: 600, color: styles.h3Color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Last Modified
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.map((doc) => (
+                    <tr
+                      key={doc.slug}
+                      style={{ borderBottom: `1px solid ${styles.cardBorder}`, transition: 'background 0.15s' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = styles.buttonSecondary; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <td style={{ padding: '12px 16px' }}>
+                        <Link
+                          href={`/docs/${doc.slug}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            fontSize: 15,
+                            fontWeight: 500,
+                          }}
+                        >
+                          <span style={{ color: styles.muted, fontSize: 16, display: 'inline-flex' }}>
+                            <IconFile />
+                          </span>
+                          {doc.title}
+                        </Link>
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: styles.muted, fontSize: 13 }}>
+                        {doc.lastModified ? new Date(doc.lastModified).toLocaleDateString() : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Card grid — small screens */}
+            <div className="docs-card-grid" style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: 20
+            }}>
+              {documents.map((doc) => (
+                <Link
+                  key={doc.slug} 
+                  href={`/docs/${doc.slug}`} 
+                  style={{ 
+                    display: 'block', 
+                    textDecoration: 'none', 
+                    color: 'inherit',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = `0 8px 25px ${styles.accent}20`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div style={{ 
+                    border: `1px solid ${styles.cardBorder}`, 
+                    borderRadius: 10, 
+                    padding: 20, 
+                    background: styles.cardBackground,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12 }}>
+                      <span style={{ marginRight: 12, fontSize: 20, color: styles.muted }}>
+                        <IconFile />
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: 16, fontWeight: 600, lineHeight: 1.4 }}>
+                          {doc.title}
+                        </h4>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: styles.muted }}>
+                      {doc.lastModified && (
+                        <span style={{ marginLeft: 'auto' }}>
+                          {new Date(doc.lastModified).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <style>{`
+              .docs-table-view { display: none; }
+              .docs-card-grid { display: grid; }
+              @media (min-width: 1024px) {
+                .docs-table-view { display: block; }
+                .docs-card-grid { display: none; }
+              }
+            `}</style>
+          </>
+        )}
       </main>
-    </div>
+    </>
   );
 }
-
-function listTree(dir: string, baseSlug = ''): PageNode[] {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const nodes: PageNode[] = [];
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      const headSlug = baseSlug ? `${baseSlug}/${entry.name}` : entry.name;
-      const indexFile = path.join(dir, entry.name, 'index.md');
-      const hasIndex = fs.existsSync(indexFile);
-      const headTitle = entry.name;
-      const children = listTree(path.join(dir, entry.name), headSlug);
-      nodes.push({ slug: headSlug, title: headTitle, children, kind: 'dir', hasIndex });
-    } else if (entry.isFile() && entry.name.endsWith('.md')) {
-      if (entry.name.toLowerCase() === 'index.md') continue;
-      const filename = entry.name;
-      const nameWithoutExt = filename.replace(/\.md$/, '');
-      const s = baseSlug ? `${baseSlug}/${nameWithoutExt}` : nameWithoutExt;
-      const f = path.join(dir, filename);
-      let t = nameWithoutExt;
-      try {
-        const raw = fs.readFileSync(f, 'utf8');
-        const fm = matter(raw);
-        if (typeof fm.data.title === 'string' && fm.data.title.trim().length) t = fm.data.title.trim();
-      } catch {}
-      nodes.push({ slug: s, title: t, filename, kind: 'file' });
-    }
-  }
-  // Apply _order.json if present
-  const orderPath = path.join(dir, '_order.json');
-  if (fs.existsSync(orderPath)) {
-    try {
-      const raw = fs.readFileSync(orderPath, 'utf8');
-      const cfg = JSON.parse(raw) as { order: string[] };
-      const order = Array.isArray(cfg.order) ? cfg.order : [];
-      const idxOf = (slug: string) => {
-        const name = slug.split('/').pop() as string;
-        const i = order.indexOf(name);
-        return i === -1 ? Number.MAX_SAFE_INTEGER : i;
-      };
-      nodes.sort((a, b) => {
-        const ia = idxOf(a.slug);
-        const ib = idxOf(b.slug);
-        if (ia !== ib) return ia - ib;
-        return a.title.localeCompare(b.title);
-      });
-    } catch {}
-  } else {
-    nodes.sort((a, b) => a.title.localeCompare(b.title));
-  }
-  return nodes;
-}
-
-export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const contentDir = path.join(process.cwd(), 'public/content');
-  const pages = listTree(contentDir);
-  return { props: { pages } };
-};

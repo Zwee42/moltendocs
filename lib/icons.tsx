@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSun, faMoon, faChevronRight, faArrowRight, faArrowLeft,
   faBook, faPen, faFile, faGripVertical, faFolder, faHashtag,
-  faFileLines, faMagnifyingGlass
+  faFileLines, faFire, faCrown, faShield, faScroll
 } from '@fortawesome/free-solid-svg-icons';
 
 export const ICON_SIZE = 16;
@@ -19,3 +19,7 @@ export function IconGrip() { return <FontAwesomeIcon icon={faGripVertical} width
 export function IconFolder() { return <FontAwesomeIcon icon={faFolder} width={ICON_SIZE} height={ICON_SIZE} />; }
 export function IconHashtag() { return <FontAwesomeIcon icon={faHashtag} width={ICON_SIZE} height={ICON_SIZE} />; }
 export function IconFileLines() { return <FontAwesomeIcon icon={faFileLines} width={ICON_SIZE} height={ICON_SIZE} />; }
+export function IconFire() { return <FontAwesomeIcon icon={faFire} width={ICON_SIZE} height={ICON_SIZE} />; }
+export function IconCrown() { return <FontAwesomeIcon icon={faCrown} width={ICON_SIZE} height={ICON_SIZE} />; }
+export function IconShield() { return <FontAwesomeIcon icon={faShield} width={ICON_SIZE} height={ICON_SIZE} />; }
+export function IconScroll() { return <FontAwesomeIcon icon={faScroll} width={ICON_SIZE} height={ICON_SIZE} />; }

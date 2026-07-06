@@ -1,5 +1,4 @@
 import dynamic from 'next/dynamic';
-import { useTheme } from '@/lib/theme';
 
 const ReactMarkdownContent = dynamic(
   () => import('./MarkdownContent'),

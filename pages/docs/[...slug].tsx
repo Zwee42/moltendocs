@@ -6,16 +6,10 @@ import matter from 'gray-matter';
 import { useTheme } from '@/lib/theme';
 import { Header } from '@/components/Header';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
-import { Geist } from 'next/font/google';
 import Link from "next/link";
-import { IconArrowRight, IconFileLines, IconFolder } from '@/lib/icons';
-import { TocTree } from '@/components/TocTree';
+import { IconArrowRight } from '@/lib/icons';
+import Sidebar from '@/components/Sidebar';
 import { useState } from 'react';
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 type PageNode = { slug: string; title: string; filename?: string; children?: PageNode[]; kind: 'dir' | 'file'; hasIndex?: boolean };
 
@@ -27,141 +21,29 @@ export default function DocPage({ slug, content, title, pages, nextSlug, toc }: 
   const { getThemeStyles } = useTheme();
   const styles = getThemeStyles();
   const [expandedPages, setExpandedPages] = useState<Record<string, boolean>>({});
-  
-  const headSlug = slug.split('/')[0];
-
-  const hasMultipleH1 = toc.length > 1;
 
   const togglePage = (pageSlug: string) => {
     setExpandedPages(prev => ({ ...prev, [pageSlug]: !prev[pageSlug] }));
   };
   
   return (
-    <div className={geistSans.className} style={{ background: styles.background, color: styles.color, height: '100vh', overflow: 'hidden' }}>
+    <>
       <Head>
         <title>{`${title || slug} - MoltenDocs`}</title>
       </Head>
       
-      <Header 
-        title="Documentation"
-        subtitle={title}
-        breadcrumbs={[
-          { label: 'MoltenDocs', href: '/' },
-          { label: 'Docs', href: '/docs' },
-          ...(slug !== 'sample' ? [{ label: title }] : [])
-        ]}
-        actions={
-          <Link  
-            href="/admin"
-            style={{
-              padding: '6px 12px',
-              background: styles.buttonSecondary,
-              color: styles.buttonSecondaryText,
-              textDecoration: 'none',
-              borderRadius: 4,
-              fontSize: 12
-            }}
-          >
-            Admin
-          </Link>
-        }
-      />
-      
-      <div style={{ display: 'flex', maxWidth: 1600, margin: '0 auto' }}>
-        <aside style={{ 
-          width: 280, 
-          borderRight: `1px solid ${styles.headerBorder}`, 
-          padding: 24,
-          background: styles.cardBackground,
-          height: 'calc(100vh - 80px)',
-          overflowY: 'auto'
-        }}>
-          <div style={{ fontWeight: 600, marginBottom: 16, color: styles.accent }}>Navigation</div>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {pages.map((node) => {
-              const isActive = node.slug === headSlug && (slug === headSlug || slug === `${headSlug}/index`);
-              const isExpanded = expandedPages[node.slug] || (node.slug === headSlug && isActive);
-              const showDropdown = node.slug === headSlug && hasMultipleH1;
-              return (
-                <div key={node.slug}>
-                  {showDropdown ? (
-                    <div
-                      onClick={() => togglePage(node.slug)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '8px 12px',
-                        borderRadius: 6,
-                        background: isActive ? styles.buttonPrimary : 'transparent',
-                        color: isActive ? styles.buttonPrimaryText : styles.color,
-                        fontSize: 14,
-                        fontWeight: 500,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {node.kind === 'dir' ? <IconFolder /> : <IconFileLines />}
-                      {node.title}
-                    </div>
-                  ) : (
-                    <Link 
-                      href={`/docs/${node.slug}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '8px 12px',
-                        borderRadius: 6,
-                        background: isActive ? styles.buttonPrimary : 'transparent',
-                        color: isActive ? styles.buttonPrimaryText : styles.color,
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        fontWeight: 500
-                      }}
-                    >
-                      {node.kind === 'dir' ? <IconFolder /> : <IconFileLines />}
-                      {node.title}
-                    </Link>
-                  )}
-                  {showDropdown && isExpanded && (
-                    <div style={{ marginLeft: 16, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <TocTree nodes={toc} />
-                    </div>
-                  )}
-                  {!showDropdown && node.slug === headSlug && node.children && node.children.length > 0 && (
-                    <div style={{ marginLeft: 16, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {node.children.map((child) => (
-                        <Link 
-                          key={child.slug} 
-                          href={`/docs/${child.slug}`} 
-                          style={{ 
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '6px 12px', 
-                            borderRadius: 6, 
-                            background: child.slug === slug ? styles.accent : 'transparent',
-                            color: child.slug === slug ? '#fff' : styles.muted,
-                            textDecoration: 'none',
-                            fontSize: 13
-                          }}
-                        >
-                          <IconFileLines />
-                          {child.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-        </aside>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <Sidebar
+          pages={pages}
+          currentSlug={slug}
+          toc={toc}
+          expandedPages={expandedPages}
+          onTogglePage={togglePage}
+        />
         
         <main style={{ 
           flex: 1, 
           padding: 24,
-          height: 'calc(100vh - 80px)',
           overflowY: 'auto'
         }}>
           <div style={{
@@ -178,7 +60,6 @@ export default function DocPage({ slug, content, title, pages, nextSlug, toc }: 
                 href={`/docs/${nextSlug}`} 
                 style={{ 
                   padding: '12px 20px', 
-                  borderRadius: 6, 
                   background: styles.buttonPrimary,
                   color: styles.buttonPrimaryText,
                   textDecoration: 'none',
@@ -192,7 +73,7 @@ export default function DocPage({ slug, content, title, pages, nextSlug, toc }: 
           )}
         </main>
       </div>
-    </div>
+    </>
   );
 }
 
