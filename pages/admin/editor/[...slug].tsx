@@ -263,13 +263,12 @@ export default function DocumentEditor() {
       </header>
 
       <main style={{ 
-        maxWidth: 1600, 
-        margin: '0 auto', 
+        maxWidth: 1560, 
         padding: 24,
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        overflow: 'hidden',
+        overflow: 'auto',
       }}>
         {error && (
           <div style={{ 
@@ -298,6 +297,18 @@ export default function DocumentEditor() {
         )}
 
         <div style={{ marginBottom: 20 }}>
+          
+          <div style={{ 
+            marginBottom: 16, 
+            padding: 12, 
+            background: styles.cardBackground,
+            border: `1px solid ${styles.cardBorder}`,
+            borderRadius: 6,
+            fontSize: 12,
+            color: styles.muted 
+          }}>
+            <strong>Shortcuts:</strong> Ctrl+S to save • Ctrl+P to toggle preview
+          </div>
           <label style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
             Document Title
           </label>
@@ -378,7 +389,7 @@ export default function DocumentEditor() {
 
         <div style={{ height: 'calc(100% - 120px)', flex: 1 }}>
           {viewMode === 'split' && (
-            <div style={{ display: 'flex', gap: 24, height: '100%' }}>
+            <div className="grid grid-cols-2 gap-8">
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
                   Markdown Content
@@ -390,6 +401,7 @@ export default function DocumentEditor() {
                   placeholder="Write your markdown content here..."
                   style={{
                     width: '100%',
+                    minWidth: "600px",
                     padding: '16px',
                     background: styles.inputBackground,
                     border: `1px solid ${styles.inputBorder}`,
@@ -449,18 +461,6 @@ export default function DocumentEditor() {
               <MarkdownPreview content={content} />
             </div>
           )}
-        </div>
-
-        <div style={{ 
-          marginTop: 16, 
-          padding: 12, 
-          background: styles.cardBackground,
-          border: `1px solid ${styles.cardBorder}`,
-          borderRadius: 6,
-          fontSize: 12,
-          color: styles.muted 
-        }}>
-          <strong>Shortcuts:</strong> Ctrl+S to save • Ctrl+P to toggle preview
         </div>
       </main>
     </>

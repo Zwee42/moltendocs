@@ -50,7 +50,7 @@ export default function AdminLogin() {
         overflowY: 'auto' 
       }}>
         <main className="max-w-[400px] mx-auto px-6 py-[60px]">
-          <div className="rounded-[10px] p-8" style={{ background: '#18181b', border: '1px solid #27272a' }}>
+          <div className="rounded-[10px] p-8 w-100" style={{ background: '#18181b', border: '1px solid #27272a' }}>
             <h2 className="m-0 mb-6 text-xl text-center" style={{ color: '#dc2626' }}>Admin Login</h2>
             
             <form onSubmit={handleSubmit}>

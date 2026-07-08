@@ -152,7 +152,7 @@ export default function AdminDashboard() {
         }
       />
 
-      <main className="max-w-[1200px] mx-auto p-6 overflow-y-auto flex-1">
+      <main className="max-w-[1560px] p-6 overflow-y-auto flex-1">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="m-0 mb-1 text-lg" style={{ color: '#dc2626' }}>
