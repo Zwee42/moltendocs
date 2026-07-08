@@ -11,6 +11,9 @@ interface ThemeContextType {
 interface ThemeStyles {
   background: string;
   color: string;
+  h1Color: string;
+  h2Color: string;
+  h3Color: string;
   headerBorder: string;
   cardBackground: string;
   cardBorder: string;
@@ -31,19 +34,22 @@ interface ThemeStyles {
 }
 
 const lightTheme: ThemeStyles = {
-  background: '#ffffff',
-  color: '#1a1a1a',
-  headerBorder: '#e5e5e5',
-  cardBackground: '#f8f9fa',
-  cardBorder: '#e5e5e5',
-  accent: '#6366f1',
-  muted: '#6b7280',
-  buttonPrimary: '#6366f1',
+  background: '#fafafa',
+  color: '#52525b',
+  h1Color: '#0b0b0b',
+  h2Color: '#18181b',
+  h3Color: '#27272a',
+  headerBorder: '#e4e4e7',
+  cardBackground: '#ffffff',
+  cardBorder: '#e4e4e7',
+  accent: '#dc2626',
+  muted: '#71717a',
+  buttonPrimary: '#dc2626',
   buttonPrimaryText: '#ffffff',
-  buttonSecondary: '#e5e7eb',
-  buttonSecondaryText: '#374151',
+  buttonSecondary: '#f4f4f5',
+  buttonSecondaryText: '#18181b',
   inputBackground: '#ffffff',
-  inputBorder: '#d1d5db',
+  inputBorder: '#e4e4e7',
   errorBackground: '#fef2f2',
   errorBorder: '#fecaca',
   errorText: '#dc2626',
@@ -53,25 +59,28 @@ const lightTheme: ThemeStyles = {
 };
 
 const darkTheme: ThemeStyles = {
-  background: '#0b0b10',
-  color: '#e9e0ee',
-  headerBorder: '#441534ff',
-  cardBackground: '#101018',
-  cardBorder: '#441534ff',
-  accent: '#cfa6db',
-  muted: '#aaa',
-  buttonPrimary: '#cfa6db',
-  buttonPrimaryText: '#000',
-  buttonSecondary: '#555',
-  buttonSecondaryText: '#fff',
-  inputBackground: '#101018',
-  inputBorder: '#441534ff',
-  errorBackground: '#4a1a1a',
-  errorBorder: '#8b2635',
-  errorText: '#ff8b94',
-  successBackground: '#1a4a2e',
-  successBorder: '#28a745',
-  successText: '#90ee90'
+  background: '#09090b',
+  color: '#d4d4d8',
+  h1Color: '#fafafa',
+  h2Color: '#f4f4f5',
+  h3Color: '#e4e4e7',
+  headerBorder: '#27272a',
+  cardBackground: '#18181b',
+  cardBorder: '#27272a',
+  accent: '#dc2626',
+  muted: '#a1a1aa',
+  buttonPrimary: '#dc2626',
+  buttonPrimaryText: '#ffffff',
+  buttonSecondary: '#27272a',
+  buttonSecondaryText: '#f4f4f5',
+  inputBackground: '#18181b',
+  inputBorder: '#27272a',
+  errorBackground: '#450a0a',
+  errorBorder: '#7f1d1d',
+  errorText: '#fca5a5',
+  successBackground: '#052e16',
+  successBorder: '#166534',
+  successText: '#86efac'
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -96,7 +105,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     const styles = theme === 'light' ? lightTheme : darkTheme;
     root.style.setProperty('--accent', styles.accent);
-    root.style.setProperty('--accent-hover', theme === 'light' ? '#818cf8' : '#dfc1e8');
+    root.style.setProperty('--accent-hover', '#ef4444');
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {

@@ -21,32 +21,32 @@ export default function MarkdownContent({ content }: { content: string }) {
       rehypePlugins={[rehypeRaw, rehypeHighlight]}
       components={{
         h1: ({ children }) => (
-          <h1 id={headingId(children)} style={{ color: styles.accent, fontSize: '32px', margin: '32px 0 16px 0', fontWeight: 700, lineHeight: 1.2 }}>
+          <h1 id={headingId(children)} style={{ color: styles.h1Color, fontSize: '32px', margin: '32px 0 16px 0', fontWeight: 700, lineHeight: 1.2 }}>
             {children}
           </h1>
         ),
         h2: ({ children }) => (
-          <h2 id={headingId(children)} style={{ color: styles.accent, fontSize: '28px', margin: '28px 0 14px 0', fontWeight: 600, lineHeight: 1.3 }}>
+          <h2 id={headingId(children)} style={{ color: styles.h2Color, fontSize: '28px', margin: '28px 0 14px 0', fontWeight: 600, lineHeight: 1.3 }}>
             {children}
           </h2>
         ),
         h3: ({ children }) => (
-          <h3 id={headingId(children)} style={{ color: styles.accent, fontSize: '24px', margin: '24px 0 12px 0', fontWeight: 600, lineHeight: 1.4 }}>
+          <h3 id={headingId(children)} style={{ color: styles.h3Color, fontSize: '24px', margin: '24px 0 12px 0', fontWeight: 600, lineHeight: 1.4 }}>
             {children}
           </h3>
         ),
         h4: ({ children }) => (
-          <h4 id={headingId(children)} style={{ color: styles.accent, fontSize: '20px', margin: '20px 0 10px 0', fontWeight: 600, lineHeight: 1.4 }}>
+          <h4 id={headingId(children)} style={{ color: styles.color, fontSize: '20px', margin: '20px 0 10px 0', fontWeight: 600, lineHeight: 1.4 }}>
             {children}
           </h4>
         ),
         h5: ({ children }) => (
-          <h5 id={headingId(children)} style={{ color: styles.accent, fontSize: '18px', margin: '18px 0 8px 0', fontWeight: 600, lineHeight: 1.5 }}>
+          <h5 id={headingId(children)} style={{ color: styles.color, fontSize: '18px', margin: '18px 0 8px 0', fontWeight: 600, lineHeight: 1.5 }}>
             {children}
           </h5>
         ),
         h6: ({ children }) => (
-          <h6 id={headingId(children)} style={{ color: styles.accent, fontSize: '16px', margin: '16px 0 6px 0', fontWeight: 600, lineHeight: 1.5 }}>
+          <h6 id={headingId(children)} style={{ color: styles.color, fontSize: '16px', margin: '16px 0 6px 0', fontWeight: 600, lineHeight: 1.5 }}>
             {children}
           </h6>
         ),
@@ -149,7 +149,7 @@ export default function MarkdownContent({ content }: { content: string }) {
           </tr>
         ),
         th: ({ children }) => (
-          <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600, color: styles.accent, borderRight: `1px solid ${styles.cardBorder}` }}>
+          <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600, color: styles.h2Color, borderRight: `1px solid ${styles.cardBorder}` }}>
             {children}
           </th>
         ),

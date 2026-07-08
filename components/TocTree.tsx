@@ -38,7 +38,7 @@ export function TocTree({ nodes, depth = 0 }: { nodes: TocNode[]; depth?: number
   }, [expanded]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       {nodes.map((node) => {
         const isOpen = expanded[node.id] || false;
         const hasChildren = node.children.length > 0;
@@ -59,16 +59,21 @@ export function TocTree({ nodes, depth = 0 }: { nodes: TocNode[]; depth?: number
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '4px 8px',
-                borderRadius: 4,
                 color: styles.muted,
                 textDecoration: 'none',
                 fontSize: 12,
-                paddingLeft: `${8 + depth * 12}px`,
+                marginLeft: 8,
+                paddingLeft: `${8 + depth * 8}px`,
+                borderLeft: `1px solid ${styles.cardBorder}`,
+                boxShadow: depth > 0 ? [...Array(depth)].map((_, i) => `${(i + 1) * 12}px 0 0 0 ${styles.cardBorder}`).join(', ') : undefined,
               }}
               onMouseEnter={(e) => e.currentTarget.style.color = styles.accent}
               onMouseLeave={(e) => e.currentTarget.style.color = styles.muted}
             >
-              <span>{node.text}</span>
+              <span
+              >
+                {node.text}
+              </span>
               {hasChildren && (
                 <span
                   onClick={(e) => {

@@ -1,23 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Geist, Geist_Mono } from 'next/font/google';
 import { useTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { isValidTitle, getWordCount } from '@/lib/utils';
 import { EditorToolbar } from '@/components/EditorToolbar';
 import { MarkdownPreview } from '@/components/MarkdownPreview';
-import { IconArrowLeft, IconSun, IconMoon } from '@/lib/icons';
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { IconArrowLeft } from '@/lib/icons';
 
 type DocumentData = {
   frontmatter: Record<string, unknown>;
@@ -28,7 +17,7 @@ type DocumentData = {
 export default function DocumentEditor() {
   const router = useRouter();
   const { slug, title: titleParam, create } = router.query;
-  const { theme, toggleTheme, getThemeStyles } = useTheme();
+  const { getThemeStyles } = useTheme();
   const styles = getThemeStyles();
   
   // Auth
@@ -242,21 +231,20 @@ export default function DocumentEditor() {
 
   if (authLoading || loading) {
     return (
-      <div className={`${geistSans.className} min-h-screen`} style={{ background: styles.background, color: styles.color }}>
-        <div style={{ padding: 24 }}>Loading...</div>
-      </div>
+      <div style={{ padding: 24 }}>Loading...</div>
     );
   }
 
   return (
-    <div className={`${geistSans.className} ${geistMono.className}`} style={{ background: styles.background, color: styles.color, minHeight: '100vh' }}>
+    <>
       <header style={{ 
         padding: '16px 24px', 
         borderBottom: `1px solid ${styles.headerBorder}`,
         background: styles.background,
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <h1 style={{ margin: 0, fontSize: 18 }}>
@@ -272,32 +260,15 @@ export default function DocumentEditor() {
             {wordCount} words
           </div>
         </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            onClick={toggleTheme}
-            style={{
-              padding: '6px 12px',
-              background: styles.buttonSecondary,
-              color: styles.buttonSecondaryText,
-              border: 'none',
-              borderRadius: 4,
-              fontSize: 12,
-              cursor: 'pointer'
-            }}
-          >
-            {theme === 'dark' ? <IconSun /> : <IconMoon />}
-          </button>
-        </div>
       </header>
 
       <main style={{ 
-        maxWidth: 1600, 
-        margin: '0 auto', 
+        maxWidth: 1560, 
         padding: 24,
-        // height: 'calc(100vh - 80px)', // Adjust for header height
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        flex: 1,
+        overflow: 'auto',
       }}>
         {error && (
           <div style={{ 
@@ -326,6 +297,18 @@ export default function DocumentEditor() {
         )}
 
         <div style={{ marginBottom: 20 }}>
+          
+          <div style={{ 
+            marginBottom: 16, 
+            padding: 12, 
+            background: styles.cardBackground,
+            border: `1px solid ${styles.cardBorder}`,
+            borderRadius: 6,
+            fontSize: 12,
+            color: styles.muted 
+          }}>
+            <strong>Shortcuts:</strong> Ctrl+S to save • Ctrl+P to toggle preview
+          </div>
           <label style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
             Document Title
           </label>
@@ -406,7 +389,7 @@ export default function DocumentEditor() {
 
         <div style={{ height: 'calc(100% - 120px)', flex: 1 }}>
           {viewMode === 'split' && (
-            <div style={{ display: 'flex', gap: 24, height: '100%' }}>
+            <div className="grid grid-cols-2 gap-8">
               <div style={{ flex: 1 }}>
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
                   Markdown Content
@@ -418,6 +401,7 @@ export default function DocumentEditor() {
                   placeholder="Write your markdown content here..."
                   style={{
                     width: '100%',
+                    minWidth: "600px",
                     padding: '16px',
                     background: styles.inputBackground,
                     border: `1px solid ${styles.inputBorder}`,
@@ -478,19 +462,7 @@ export default function DocumentEditor() {
             </div>
           )}
         </div>
-
-        <div style={{ 
-          marginTop: 16, 
-          padding: 12, 
-          background: styles.cardBackground,
-          border: `1px solid ${styles.cardBorder}`,
-          borderRadius: 6,
-          fontSize: 12,
-          color: styles.muted 
-        }}>
-          <strong>Shortcuts:</strong> Ctrl+S to save • Ctrl+P to toggle preview
-        </div>
       </main>
-    </div>
+    </>
   );
 }

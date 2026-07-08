@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme';
-import { IconSun, IconMoon, IconChevronRight } from '@/lib/icons';
+import { IconChevronRight } from '@/lib/icons';
 
 interface HeaderProps {
   title: string;
@@ -11,16 +11,17 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, breadcrumbs, actions }: HeaderProps) {
-  const { theme, toggleTheme, getThemeStyles } = useTheme();
+  const { getThemeStyles } = useTheme();
   const styles = getThemeStyles();
 
   return (
     <header style={{ 
-      padding: '20px 24px', 
+      padding: '16px 24px', 
       borderBottom: `1px solid ${styles.headerBorder}`,
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
+      flexShrink: 0,
     }}>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: subtitle ? 4 : 0 }}>
@@ -48,20 +49,6 @@ export function Header({ title, subtitle, breadcrumbs, actions }: HeaderProps) {
       </div>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button
-          onClick={toggleTheme}
-          style={{
-            padding: '6px 12px',
-            background: styles.buttonSecondary,
-            color: styles.buttonSecondaryText,
-            border: 'none',
-            borderRadius: 4,
-            fontSize: 12,
-            cursor: 'pointer'
-          }}
-        >
-          {theme === 'dark' ? <IconSun /> : <IconMoon />}
-        </button>
         {actions}
       </div>
     </header>
